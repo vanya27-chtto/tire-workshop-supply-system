@@ -212,7 +212,7 @@ class PurchaseOrder(models.Model):
         User, 
         on_delete=models.SET_NULL, 
         null=True,
-        related_name='created_orders',
+        related_name='procurement_created_orders',
         verbose_name="Создал"
     )
 
