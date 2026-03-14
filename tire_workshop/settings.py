@@ -41,7 +41,12 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'core',
     'procurement',
+    'dashboard',
 ]
+
+LOGIN_REDIRECT_URL = 'dashboard'
+LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'login'
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
