@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления - Система снабжения шиномонтажа</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        /* Боковая панель навигации */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px 0;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .user-info {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.1);
+            margin: 0 15px 20px;
+            border-radius: 8px;
+        }
+
+        .user-info strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 3px;
+        }
+
+        .user-info span {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin: 5px 0;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: #3498db;
+        }
+
+        .nav-menu a i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-section {
+            padding: 10px 20px 5px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-top: 15px;
+        }
+
+        /* Основной контент */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* Виджеты */
+        .widgets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .widget {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .widget:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .widget-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .widget-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .widget-icon.notifications {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .widget-icon.low-stock {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .widget-icon.stats {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .widget-icon.materials {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Списки в виджетах */
+        .widget-list {
+            list-style: none;
+        }
+
+        .widget-list-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+
+        .item-meta {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .item-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-ok {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        /* Таблица материалов */
+        .materials-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .materials-table th,
+        .materials-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .materials-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 13px;
+        }
+
+        .materials-table td {
+            font-size: 14px;
+        }
+
+        .btn-use {
+            padding: 6px 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .btn-use:hover {
+            background: #2980b9;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #2c3e50;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Сообщения */
+        .messages {
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Статистика карточки */
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #95a5a6;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Боковая панель навигации -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>🔧 Снабжение</h2>
+            <p>Шиномонтажная мастерская</p>
+        </div>
+
+        <div class="user-info">
+            <strong>{{ user.username }}</strong>
+            <span>
+                {% if is_admin %}Администратор{% elif is_merchandiser %}Товаровед{% elif is_workshop %}Сотрудник цеха{% endif %}
+            </span>
+        </div>
+
+        <ul class="nav-menu">
+            <li><a href="{% url 'dashboard' %}" class="active">📊 Панель управления</a></li>
+            
+            {% if is_merchandiser or is_admin %}
+            <li class="nav-section">Для товароведа</li>
+            <li><a href="/admin/procurement/purchaserequest/">📝 Заявки на закупку</a></li>
+            <li><a href="/admin/procurement/purchaseorder/">📦 Заказы поставщикам</a></li>
+            <li><a href="/admin/procurement/product/">📦 Товары на складе</a></li>
+            <li><a href="/admin/procurement/supplier/">🚚 Поставщики</a></li>
+            {% endif %}
+
+            {% if is_workshop or is_admin %}
+            <li class="nav-section">Для сотрудника цеха</li>
+            <li><a href="#materials">🔩 Материалы в цеху</a></li>
+            <li><a href="/admin/procurement/purchaserequest/add/">➕ Создать заявку</a></li>
+            {% endif %}
+
+            <li class="nav-section">Система</li>
+            <li><a href="/admin/">⚙️ Админ-панель</a></li>
+            <li><a href="/admin/logout/">🚪 Выйти</a></li>
+        </ul>
+    </aside>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1>Панель управления</h1>
+            <p>Добро пожаловать! Текущая дата: {{ current_time|date:"d.m.Y H:i" }}</p>
+        </div>
+
+        <!-- Сообщения -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Виджеты для товароведа -->
+        {% if is_merchandiser or is_admin %}
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-value">{{ total_orders }}</div>
+                <div class="stat-label">Всего заказов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ pending_orders }}</div>
+                <div class="stat-label">Черновики</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ sent_orders }}</div>
+                <div class="stat-label">Отправлено</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ pending_requests|length }}</div>
+                <div class="stat-label">Заявок на согласование</div>
+            </div>
+        </div>
+
+        <div class="widgets-grid">
+            <!-- Уведомления о заявках -->
+            <div class="widget">
+                <div class="widget-header">
+                    <h3 class="widget-title">📬 Заявки от работников цеха</h3>
+                    <div class="widget-icon notifications">📋</div>
+                </div>
+                {% if pending_requests %}
+                <ul class="widget-list">
+                    {% for request in pending_requests %}
+                    <li class="widget-list-item">
+                        <div class="item-info">
+                            <div class="item-name">{{ request.requester.username }}</div>
+                            <div class="item-meta">
+                                {{ request.created_at|date:"d.m.Y H:i" }} • 
+                                {{ request.items_count }} поз.
+                            </div>
+                        </div>
+                        <span class="item-status status-pending">На согласовании</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <p>Нет новых заявок на согласование</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Низкий запас на складе -->
+            <div class="widget">
+                <div class="widget-header">
+                    <h3 class="widget-title">⚠️ Низкий запас на складе</h3>
+                    <div class="widget-icon low-stock">📉</div>
+                </div>
+                {% if low_stock_products %}
+                <ul class="widget-list">
+                    {% for product in low_stock_products %}
+                    <li class="widget-list-item">
+                        <div class="item-info">
+                            <div class="item-name">{{ product.name }}</div>
+                            <div class="item-meta">
+                                Остаток: {{ product.stock_quantity }} {{ product.unit }} / 
+                                Мин: {{ product.min_stock_level }} {{ product.unit }}
+                            </div>
+                        </div>
+                        <span class="item-status status-low">Мало</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <p>Все товары в достаточном количестве</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Недавние заявки -->
+            <div class="widget">
+                <div class="widget-header">
+                    <h3 class="widget-title">📋 Недавние заявки</h3>
+                    <div class="widget-icon stats">📊</div>
+                </div>
+                {% if recent_requests %}
+                <ul class="widget-list">
+                    {% for request in recent_requests %}
+                    <li class="widget-list-item">
+                        <div class="item-info">
+                            <div class="item-name">{{ request.requester.username }}</div>
+                            <div class="item-meta">
+                                {{ request.created_at|date:"d.m.Y H:i" }} • 
+                                Статус: {{ request.get_status_display }}
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <p>Нет недавних заявок</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Виджеты для сотрудника цеха -->
+        {% if is_workshop or is_admin %}
+        <div class="widget" id="materials">
+            <div class="widget-header">
+                <h3 class="widget-title">🔩 Материалы в цеху</h3>
+                <div class="widget-icon materials">📦</div>
+            </div>
+            <p style="margin-bottom: 15px; color: #7f8c8d;">
+                Общий объем материалов: <strong>{{ total_workshop_value }}</strong> ед.
+            </p>
+            
+            {% if workshop_materials %}
+            <table class="materials-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Категория</th>
+                        <th>Артикул</th>
+                        <th>Остаток</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in workshop_materials %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.category.name|default:"Без категории" }}</td>
+                        <td>{{ product.sku }}</td>
+                        <td>
+                            {{ product.stock_quantity }} {{ product.unit }}
+                            {% if product.is_low_stock %}
+                            <span style="color: #e74c3c; font-size: 11px;">⚠️</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn-use" onclick="openUseModal({{ product.id }}, '{{ product.name }}', {{ product.stock_quantity }}, '{{ product.unit }}')">
+                                Использовать
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <p>Материалы не найдены</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+
+    <!-- Модальное окно использования материала -->
+    <div class="modal" id="useMaterialModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Использование материала</h3>
+            </div>
+            <form method="POST" action="{% url 'use_material' %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" id="modalProductId">
+                
+                <div class="form-group">
+                    <label>Материал:</label>
+                    <div id="modalProductName" style="font-weight: 600; color: #2c3e50;"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="quantity">Количество для использования:</label>
+                    <input type="number" name="quantity" id="quantity" min="1" required>
+                    <small style="color: #7f8c8d;">Доступно: <span id="modalAvailable"></span> <span id="modalUnit"></span></small>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeUseModal()">Отмена</button>
+                    <button type="submit" class="btn-submit">Подтвердить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openUseModal(productId, productName, available, unit) {
+            document.getElementById('modalProductId').value = productId;
+            document.getElementById('modalProductName').textContent = productName;
+            document.getElementById('modalAvailable').textContent = available;
+            document.getElementById('modalUnit').textContent = unit;
+            document.getElementById('quantity').max = available;
+            document.getElementById('quantity').value = 1;
+            document.getElementById('useMaterialModal').classList.add('active');
+        }
+
+        function closeUseModal() {
+            document.getElementById('useMaterialModal').classList.remove('active');
+        }
+
+        // Закрытие модального окна при клике вне его
+        document.getElementById('useMaterialModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUseModal();
+            }
+        });
+    </script>
+</body>
+</html>
