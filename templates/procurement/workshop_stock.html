@@ -354,9 +354,12 @@
                                 <th>Материал</th>
                                 <th>Артикул</th>
                                 <th>Количество</th>
+                                <th>Мин. запас</th>
+                                <th>Статус</th>
                                 <th>Ед. изм.</th>
                                 <th>Место хранения</th>
                                 <th>Последнее обновление</th>
+                                <th>Действие</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -367,9 +370,17 @@
                                     </td>
                                     <td>{{ stock.product.sku }}</td>
                                     <td>
-                                        <span class="quantity-badge {% if stock.quantity <= stock.product.min_stock_level %}quantity-low{% else %}quantity-good{% endif %}">
+                                        <span class="quantity-badge {% if stock.is_low_stock %}quantity-low{% else %}quantity-good{% endif %}">
                                             {{ stock.quantity }}
                                         </span>
+                                    </td>
+                                    <td>{{ stock.min_quantity }}</td>
+                                    <td>
+                                        {% if stock.is_low_stock %}
+                                            <span style="color: #e74c3c; font-size: 12px;">⚠️ Низкий</span>
+                                        {% else %}
+                                            <span style="color: #27ae60; font-size: 12px;">✓ В норме</span>
+                                        {% endif %}
                                     </td>
                                     <td>{{ stock.product.unit }}</td>
                                     <td>
@@ -379,7 +390,16 @@
                                             <span style="color: #95a5a6;">—</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ stock.updated_at|date:"d.m.Y H:i" }}</td>
+                                    <td>{{ stock.updated_at|date:"d.m.Y H:i" }}<br>
+                                        <small style="color: #95a5a6;">{{ stock.updated_by.get_full_name|default:stock.updated_by.username|default:"—" }}</small>
+                                    </td>
+                                    <td>
+                                        <button class="btn-add" 
+                                                onclick="openEditModal('{{ stock.id }}', '{{ stock.product.name }}', {{ stock.quantity }}, {{ stock.min_quantity }}, '{{ stock.location }}')"
+                                                style="padding: 6px 12px; font-size: 12px;">
+                                            ✏️ Изменить
+                                        </button>
+                                    </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -393,5 +413,70 @@
             </div>
         </div>
     </main>
+
+    <!-- Модальное окно редактирования запасов цеха -->
+    <div class="modal" id="editWorkshopStockModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
+            <div class="modal-header" style="margin-bottom: 20px;">
+                <h3 style="color: #2c3e50; font-size: 18px;">✏️ Редактирование запасов цеха</h3>
+            </div>
+            <form method="post" action="{% url 'update_workshop_stock' 0 %}" id="editWorkshopStockForm">
+                {% csrf_token %}
+                <input type="hidden" id="editStockId" name="stock_id">
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Материал</label>
+                    <input type="text" id="editMaterialName" readonly style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #f8f9fa;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Количество в цеху</label>
+                    <input type="number" id="editQuantity" name="quantity" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Минимальный запас</label>
+                    <input type="number" id="editMinQuantity" name="min_quantity" min="0" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Место хранения</label>
+                    <input type="text" id="editLocation" name="location" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+
+                <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeEditModal()" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">Отмена</button>
+                    <button type="submit" class="btn-add" style="border: none; cursor: pointer;">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(stockId, materialName, quantity, minQuantity, location) {
+            document.getElementById('editStockId').value = stockId;
+            document.getElementById('editMaterialName').value = materialName;
+            document.getElementById('editQuantity').value = quantity;
+            document.getElementById('editMinQuantity').value = minQuantity;
+            document.getElementById('editLocation').value = location || '';
+            
+            // Обновляем URL формы
+            const form = document.getElementById('editWorkshopStockForm');
+            form.action = form.action.replace('/0/', '/' + stockId + '/');
+            
+            document.getElementById('editWorkshopStockModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editWorkshopStockModal').style.display = 'none';
+        }
+
+        // Закрытие модального окна при клике вне его
+        document.getElementById('editWorkshopStockModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+    </script>
 </body>
 </html>
