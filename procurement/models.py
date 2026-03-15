@@ -14,6 +14,10 @@ class WorkshopStock(models.Model):
         default=0,
         verbose_name="Количество в цеху"
     )
+    min_quantity = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Минимальное количество"
+    )
     location = models.CharField(
         max_length=100,
         blank=True,
@@ -36,6 +40,11 @@ class WorkshopStock(models.Model):
 
     def __str__(self):
         return f"{self.product.name} - {self.quantity} {self.product.unit}"
+
+    @property
+    def is_low_stock(self):
+        """Проверка необходимости пополнения"""
+        return self.quantity <= self.min_quantity
 
 
 class Category(models.Model):

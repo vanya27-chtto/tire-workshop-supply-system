@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.db.models import F
-from procurement.models import PurchaseRequest, Product, PurchaseOrder
+from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock
 
 
 @login_required
@@ -38,8 +38,8 @@ def dashboard(request):
             'priority': 'high'
         })
     
-    # Материалы в цеху (для работников цеха)
-    workshop_materials = Product.objects.all()[:10]
+    # Материалы в цеху (для работников цеха) - данные из модели WorkshopStock
+    workshop_materials = WorkshopStock.objects.all().select_related('product')[:10]
     
     context = {
         'notifications': notifications,
@@ -49,4 +49,28 @@ def dashboard(request):
     
     return render(request, 'dashboard.html', context)
 
-# Create your views here.
+
+@login_required
+def warehouse(request):
+    """Страница склада - управление товарными запасами"""
+    products = Product.objects.all().select_related('category')
+    
+    context = {
+        'products': products,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/warehouse.html', context)
+
+
+@login_required
+def workshop_stock(request):
+    """Страница запасов цеха"""
+    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'updated_by')
+    
+    context = {
+        'workshop_stocks': workshop_stocks,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/workshop_stock.html', context)

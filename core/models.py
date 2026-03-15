@@ -243,3 +243,49 @@ class OrderItem(models.Model):
     def save(self, *args, **kwargs):
         self.subtotal = self.quantity_ordered * self.unit_price
         super().save(*args, **kwargs)
+
+
+class WorkshopStock(models.Model):
+    """Запасы цеха - материалы и инструменты в производственном цеху"""
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='workshop_stocks',
+        verbose_name=_('Товар')
+    )
+    quantity = models.PositiveIntegerField(_('Количество в цеху'), default=0)
+    location = models.CharField(
+        _('Место хранения'), 
+        max_length=100, 
+        blank=True,
+        help_text=_('Например: Стеллаж А-3, Верстак 2')
+    )
+    responsible_person = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='workshop_stocks',
+        verbose_name=_('Ответственный')
+    )
+    min_quantity = models.PositiveIntegerField(
+        _('Минимальный уровень запаса в цеху'), 
+        default=5,
+        help_text=_('При достижении этого уровня требуется пополнение со склада')
+    )
+    last_updated = models.DateTimeField(_('Дата последнего обновления'), auto_now=True)
+    notes = models.TextField(_('Примечание'), blank=True)
+
+    class Meta:
+        verbose_name = _('Запас цеха')
+        verbose_name_plural = _('Запасы цеха')
+        ordering = ['product__name']
+        unique_together = ['product', 'location']
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity} {self.product.unit} ({self.location})"
+
+    @property
+    def needs_replenishment(self):
+        """Проверка необходимости пополнения со склада"""
+        return self.quantity <= self.min_quantity

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Склад - Система снабжения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Левая навигационная панель */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            color: #bdc3c7;
+            font-size: 12px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .sidebar-menu .menu-icon {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #e74c3c;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        /* Основная область контента */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: inline-block;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .user-info span {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        /* Таблица товаров */
+        .products-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header .widget-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .btn-add {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .table-container {
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .products-table th,
+        .products-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .products-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .products-table td {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .stock-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stock-good {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .stock-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #e8f4fd;
+            color: #2980b9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Левая навигационная панель -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>🔧 Система снабжения</h2>
+            <p>Шиномонтажная мастерская</p>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{% url 'dashboard' %}">
+                    <span class="menu-icon">📊</span>
+                    <span>Панель управления</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon">📋</span>
+                    <span>Заявки</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'warehouse' %}" class="active">
+                    <span class="menu-icon">📦</span>
+                    <span>Склад</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'workshop_stock' %}">
+                    <span class="menu-icon">🏭</span>
+                    <span>Запасы цеха</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon">🚚</span>
+                    <span>Заказы</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon">👥</span>
+                    <span>Поставщики</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon">📈</span>
+                    <span>Отчеты</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout-btn">
+                <span class="menu-icon">🚪</span>
+                <span>Выйти</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Основная область контента -->
+    <main class="main-content">
+        <div class="page-header">
+            <div class="user-info">
+                👤 <span>{{ user.get_full_name|default:user.username }}</span>
+                {% if user.is_staff %}
+                    <span style="color: #667eea; font-size: 12px; margin-left: 10px;">(Администратор)</span>
+                {% endif %}
+            </div>
+            <h1>Склад</h1>
+            <p>Управление товарными запасами на складе</p>
+        </div>
+
+        <div class="products-card">
+            <div class="card-header">
+                <h3>
+                    <span class="widget-icon">📦</span>
+                    Товары на складе
+                </h3>
+                <button class="btn-add">+ Добавить товар</button>
+            </div>
+            <div class="table-container">
+                {% if products %}
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>Наименование</th>
+                                <th>Артикул</th>
+                                <th>Категория</th>
+                                <th>Ед. изм.</th>
+                                <th>Текущий остаток</th>
+                                <th>Мин. остаток</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                                <tr>
+                                    <td>
+                                        <span class="product-name">{{ product.name }}</span>
+                                    </td>
+                                    <td>{{ product.sku }}</td>
+                                    <td>
+                                        {% if product.category %}
+                                            <span class="category-badge">{{ product.category.name }}</span>
+                                        {% else %}
+                                            <span style="color: #95a5a6;">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ product.unit }}</td>
+                                    <td>{{ product.current_stock }}</td>
+                                    <td>{{ product.min_stock_level }}</td>
+                                    <td>
+                                        {% if product.current_stock <= product.min_stock_level %}
+                                            <span class="stock-badge stock-low">Низкий запас</span>
+                                        {% else %}
+                                            <span class="stock-badge stock-good">В норме</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <p>Товары на складе отсутствуют</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>
