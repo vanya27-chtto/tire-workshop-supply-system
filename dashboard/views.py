@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from procurement.models import Product, PurchaseRequest, PurchaseOrder, Supplier, WorkshopStock
+from core.models import Product, PurchaseRequest, PurchaseOrder, Supplier, WorkshopStock
 from django.db.models import Sum, F
 from datetime import datetime
 
@@ -34,12 +34,12 @@ def dashboard(request):
         
         # Уведомления о низком запасе на складе (из таблицы Product)
         low_stock_warehouse = Product.objects.filter(
-            current_stock__lte=F('min_stock_level'),
-        ).order_by('current_stock')[:10]
+            quantity__lte=F('min_quantity'),
+        ).order_by('quantity')[:10]
         
         # Уведомления о низком запасе в цеху (из таблицы WorkshopStock)
         low_stock_workshop = WorkshopStock.objects.filter(
-            quantity__lte=5
+            quantity__lte=F('min_quantity')
         ).select_related('product').order_by('quantity')[:10]
         
         # Статистика по заказам
@@ -97,13 +97,8 @@ def use_material(request):
             else:
                 # Списываем материал из цеха
                 workshop_stock.quantity -= quantity
-                workshop_stock.updated_by = request.user
                 
-                # Автоматически обновляем статус перед сохранением
-                if workshop_stock.quantity < workshop_stock.min_quantity:
-                    workshop_stock.status = 'low'
-                else:
-                    workshop_stock.status = 'normal'
+                # Статус автоматически обновится при сохранении благодаря методу save() в модели
                 
                 workshop_stock.save()
                 

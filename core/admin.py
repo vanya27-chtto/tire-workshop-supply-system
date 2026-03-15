@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Category, Supplier, Product, PurchaseRequest, PurchaseRequestItem, PurchaseOrder, OrderItem
+from .models import Category, Supplier, Product, PurchaseRequest, PurchaseRequestItem, PurchaseOrder, OrderItem, WorkshopStock
 
 
 @admin.register(Category)
@@ -27,6 +27,20 @@ class ProductAdmin(admin.ModelAdmin):
             return format_html('<span style="color: red;">⚠️ Требуется заказ</span>')
         return format_html('<span style="color: green;">✓ В норме</span>')
     needs_reorder_indicator.short_description = 'Статус запаса'
+
+
+@admin.register(WorkshopStock)
+class WorkshopStockAdmin(admin.ModelAdmin):
+    list_display = ['product', 'quantity', 'location', 'responsible_person', 'min_quantity', 'status', 'last_updated', 'needs_replenishment_indicator']
+    list_filter = ['status', 'location']
+    search_fields = ['product__name', 'product__sku']
+    readonly_fields = ['last_updated', 'status']
+    
+    def needs_replenishment_indicator(self, obj):
+        if obj.needs_replenishment:
+            return format_html('<span style="color: red;">⚠️ Требуется пополнение</span>')
+        return format_html('<span style="color: green;">✓ В норме</span>')
+    needs_replenishment_indicator.short_description = 'Статус запаса'
 
 
 @admin.register(PurchaseRequest)

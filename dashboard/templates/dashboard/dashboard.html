@@ -676,8 +676,10 @@
                         <td>{{ stock.product.sku }}</td>
                         <td>
                             {{ stock.quantity }} {{ stock.product.unit }}
-                            {% if stock.quantity <= 5 %}
-                            <span style="color: #e74c3c; font-size: 11px;">⚠️</span>
+                            {% if stock.status == 'low' %}
+                            <span class="item-status status-low" style="margin-left: 8px;">Низкий</span>
+                            {% else %}
+                            <span class="item-status status-ok" style="margin-left: 8px;">В норме</span>
                             {% endif %}
                         </td>
                         <td>

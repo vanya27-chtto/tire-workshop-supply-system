@@ -247,6 +247,12 @@ class OrderItem(models.Model):
 
 class WorkshopStock(models.Model):
     """Запасы цеха - материалы и инструменты в производственном цеху"""
+    
+    STATUS_CHOICES = [
+        ('normal', 'В норме'),
+        ('low', 'Низкий запас'),
+    ]
+    
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
@@ -273,6 +279,12 @@ class WorkshopStock(models.Model):
         default=5,
         help_text=_('При достижении этого уровня требуется пополнение со склада')
     )
+    status = models.CharField(
+        _('Статус'),
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='normal'
+    )
     last_updated = models.DateTimeField(_('Дата последнего обновления'), auto_now=True)
     notes = models.TextField(_('Примечание'), blank=True)
 
@@ -289,3 +301,11 @@ class WorkshopStock(models.Model):
     def needs_replenishment(self):
         """Проверка необходимости пополнения со склада"""
         return self.quantity <= self.min_quantity
+    
+    def save(self, *args, **kwargs):
+        """Автоматическое обновление статуса при сохранении"""
+        if self.quantity <= self.min_quantity:
+            self.status = 'low'
+        else:
+            self.status = 'normal'
+        super().save(*args, **kwargs)
