@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель управления - Система снабжения шиномонтажа</title>
+    <title>Учет и управление закупками</title>
     <style>
         * {
             margin: 0;
@@ -195,9 +195,30 @@
             color: #0c5460;
         }
 
-        /* Списки в виджетах */
+        /* Списки в виджетах с прокруткой */
         .widget-list {
             list-style: none;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .widget-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .widget-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .widget-list::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .widget-list::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
         }
 
         .widget-list-item {
@@ -439,7 +460,7 @@
     <!-- Боковая панель навигации -->
     <aside class="sidebar">
         <div class="sidebar-header">
-            <h2>🔧 Снабжение</h2>
+            <h2>🔧 Учет и управление закупками</h2>
             <p>Шиномонтажная мастерская</p>
         </div>
 
@@ -547,14 +568,14 @@
                     <h3 class="widget-title">⚠️ Низкий запас на складе</h3>
                     <div class="widget-icon low-stock">📉</div>
                 </div>
-                {% if low_stock_products %}
+                {% if low_stock_warehouse %}
                 <ul class="widget-list">
-                    {% for product in low_stock_products %}
+                    {% for product in low_stock_warehouse %}
                     <li class="widget-list-item">
                         <div class="item-info">
                             <div class="item-name">{{ product.name }}</div>
                             <div class="item-meta">
-                                Остаток: {{ product.stock_quantity }} {{ product.unit }} / 
+                                Остаток: {{ product.current_stock }} {{ product.unit }} / 
                                 Мин: {{ product.min_stock_level }} {{ product.unit }}
                             </div>
                         </div>
@@ -565,6 +586,33 @@
                 {% else %}
                 <div class="empty-state">
                     <p>Все товары в достаточном количестве</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Низкий запас в цеху -->
+            <div class="widget">
+                <div class="widget-header">
+                    <h3 class="widget-title">⚠️ Низкий запас в цеху</h3>
+                    <div class="widget-icon low-stock">🏭</div>
+                </div>
+                {% if low_stock_workshop %}
+                <ul class="widget-list">
+                    {% for stock in low_stock_workshop %}
+                    <li class="widget-list-item">
+                        <div class="item-info">
+                            <div class="item-name">{{ stock.product.name }}</div>
+                            <div class="item-meta">
+                                Остаток: {{ stock.quantity }} {{ stock.product.unit }}
+                            </div>
+                        </div>
+                        <span class="item-status status-low">Мало</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty-state">
+                    <p>Запасы в цеху в норме</p>
                 </div>
                 {% endif %}
             </div>
@@ -621,19 +669,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for product in workshop_materials %}
+                    {% for stock in workshop_materials %}
                     <tr>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.category.name|default:"Без категории" }}</td>
-                        <td>{{ product.sku }}</td>
+                        <td>{{ stock.product.name }}</td>
+                        <td>{{ stock.product.category.name|default:"Без категории" }}</td>
+                        <td>{{ stock.product.sku }}</td>
                         <td>
-                            {{ product.stock_quantity }} {{ product.unit }}
-                            {% if product.is_low_stock %}
+                            {{ stock.quantity }} {{ stock.product.unit }}
+                            {% if stock.quantity <= 5 %}
                             <span style="color: #e74c3c; font-size: 11px;">⚠️</span>
                             {% endif %}
                         </td>
                         <td>
-                            <button class="btn-use" onclick="openUseModal({{ product.id }}, '{{ product.name }}', {{ product.stock_quantity }}, '{{ product.unit }}')">
+                            <button class="btn-use" onclick="openUseModal({{ stock.id }}, '{{ stock.product.name }}', {{ stock.quantity }}, '{{ stock.product.unit }}')">
                                 Использовать
                             </button>
                         </td>
@@ -658,7 +706,7 @@
             </div>
             <form method="POST" action="{% url 'use_material' %}">
                 {% csrf_token %}
-                <input type="hidden" name="product_id" id="modalProductId">
+                <input type="hidden" name="stock_id" id="modalStockId">
                 
                 <div class="form-group">
                     <label>Материал:</label>
@@ -680,8 +728,8 @@
     </div>
 
     <script>
-        function openUseModal(productId, productName, available, unit) {
-            document.getElementById('modalProductId').value = productId;
+        function openUseModal(stockId, productName, available, unit) {
+            document.getElementById('modalStockId').value = stockId;
             document.getElementById('modalProductName').textContent = productName;
             document.getElementById('modalAvailable').textContent = available;
             document.getElementById('modalUnit').textContent = unit;

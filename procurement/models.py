@@ -2,6 +2,42 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class WorkshopStock(models.Model):
+    """Запасы материалов в цеху"""
+    product = models.ForeignKey(
+        'procurement.Product',
+        on_delete=models.CASCADE,
+        related_name='workshop_stocks',
+        verbose_name="Товар"
+    )
+    quantity = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Количество в цеху"
+    )
+    location = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name="Место хранения"
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
+    updated_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='workshop_stock_updates',
+        verbose_name="Кто обновил"
+    )
+
+    class Meta:
+        verbose_name = "Запас в цеху"
+        verbose_name_plural = "Запасы в цеху"
+        ordering = ['product__name']
+        unique_together = ['product']
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity} {self.product.unit}"
+
+
 class Category(models.Model):
     """Категория товаров (например: Шины, Диски, Расходные материалы)"""
     name = models.CharField(max_length=100, verbose_name="Название категории")
