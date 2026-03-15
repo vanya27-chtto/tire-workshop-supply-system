@@ -101,3 +101,33 @@ def workshop_stock(request):
     }
     
     return render(request, 'procurement/workshop_stock.html', context)
+
+
+@login_required
+def update_workshop_stock(request, stock_id):
+    """Обновление запасов цеха товароведом"""
+    if request.method == 'POST':
+        try:
+            workshop_stock = WorkshopStock.objects.get(id=stock_id)
+            quantity = int(request.POST.get('quantity', 0))
+            min_quantity = int(request.POST.get('min_quantity', 0))
+            location = request.POST.get('location', '')
+            
+            # Обновляем значения
+            workshop_stock.quantity = quantity
+            workshop_stock.min_quantity = min_quantity
+            workshop_stock.location = location
+            workshop_stock.updated_by = request.user
+            # Статус обновится автоматически в методе save() модели
+            workshop_stock.save()
+            
+            messages.success(
+                request, 
+                f'Запасы "{workshop_stock.product.name}" в цеху обновлены: количество={quantity}, мин. запас={min_quantity}'
+            )
+        except WorkshopStock.DoesNotExist:
+            messages.error(request, 'Запись о запасах не найдена')
+        except Exception as e:
+            messages.error(request, f'Ошибка: {str(e)}')
+    
+    return redirect('workshop_stock')
