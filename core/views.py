@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import F
 from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock
 
@@ -61,6 +62,32 @@ def warehouse(request):
     }
     
     return render(request, 'procurement/warehouse.html', context)
+
+
+@login_required
+def update_product_stock(request, product_id):
+    """Обновление остатков товара товароведом"""
+    if request.method == 'POST':
+        try:
+            product = Product.objects.get(id=product_id)
+            current_stock = int(request.POST.get('current_stock', 0))
+            min_stock_level = int(request.POST.get('min_stock_level', 0))
+            
+            # Обновляем значения
+            product.current_stock = current_stock
+            product.min_stock_level = min_stock_level
+            product.save()
+            
+            messages.success(
+                request, 
+                f'Запасы товара "{product.name}" обновлены: текущий={current_stock}, минимальный={min_stock_level}'
+            )
+        except Product.DoesNotExist:
+            messages.error(request, 'Товар не найден')
+        except Exception as e:
+            messages.error(request, f'Ошибка: {str(e)}')
+    
+    return redirect('warehouse')
 
 
 @login_required
