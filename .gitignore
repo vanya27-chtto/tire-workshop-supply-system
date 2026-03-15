@@ -1,42 +1,4 @@
 ```
-# Database
-db.sqlite3
-
-# Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-*.py~
-*.pyc~
-*.pyo~
-*.pyd~
-*.py~
-
-# Migrations
-*/migrations/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-
-# Dependencies
-.venv/
-venv/
-node_modules/
-
-# Build artifacts
-dist/
-build/
-target/
 ```

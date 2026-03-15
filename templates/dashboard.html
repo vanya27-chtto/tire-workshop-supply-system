@@ -443,9 +443,15 @@
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="{% url 'warehouse' %}">
                     <span class="menu-icon">📦</span>
                     <span>Склад</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'workshop_stock' %}">
+                    <span class="menu-icon">🏭</span>
+                    <span>Запасы цеха</span>
                 </a>
             </li>
             <li>
@@ -535,23 +541,35 @@
                             <tr>
                                 <th>Материал</th>
                                 <th>Количество</th>
+                                <th>Мин. запас</th>
+                                <th>Статус</th>
                                 <th>Действие</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for material in workshop_materials %}
+                            {% for stock in workshop_materials %}
                                 <tr>
                                     <td>
-                                        <span class="material-name">{{ material.name }}</span>
+                                        <span class="material-name">{{ stock.product.name }}</span>
                                     </td>
                                     <td>
-                                        <span class="quantity-badge {% if material.current_stock <= material.min_stock_level %}quantity-low{% else %}quantity-good{% endif %}">
-                                            {{ material.current_stock }} {{ material.unit }}
+                                        <span class="quantity-badge {% if stock.is_low_stock %}quantity-low{% else %}quantity-good{% endif %}">
+                                            {{ stock.quantity }} {{ stock.product.unit }}
                                         </span>
                                     </td>
                                     <td>
+                                        {{ stock.min_quantity }} {{ stock.product.unit }}
+                                    </td>
+                                    <td>
+                                        {% if stock.is_low_stock %}
+                                            <span style="color: #e74c3c; font-size: 12px;">⚠️ Низкий</span>
+                                        {% else %}
+                                            <span style="color: #27ae60; font-size: 12px;">✓ В норме</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
                                         <button class="btn-use-material" 
-                                                onclick="openUseModal('{{ material.id }}', '{{ material.name }}', {{ material.current_stock }}, '{{ material.unit }}')">
+                                                onclick="openUseModal('{{ stock.id }}', '{{ stock.product.name }}', {{ stock.quantity }}, '{{ stock.product.unit }}')">
                                             Использовать
                                         </button>
                                     </td>
