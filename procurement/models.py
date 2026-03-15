@@ -4,6 +4,11 @@ from django.contrib.auth.models import User
 
 class WorkshopStock(models.Model):
     """Запасы материалов в цеху"""
+    STATUS_CHOICES = [
+        ('normal', 'В норме'),
+        ('low', 'Низкий запас'),
+    ]
+    
     product = models.ForeignKey(
         'procurement.Product',
         on_delete=models.CASCADE,
@@ -17,6 +22,12 @@ class WorkshopStock(models.Model):
     min_quantity = models.PositiveIntegerField(
         default=0,
         verbose_name="Минимальное количество"
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='normal',
+        verbose_name="Статус"
     )
     location = models.CharField(
         max_length=100,
@@ -45,6 +56,14 @@ class WorkshopStock(models.Model):
     def is_low_stock(self):
         """Проверка необходимости пополнения"""
         return self.quantity <= self.min_quantity
+    
+    def save(self, *args, **kwargs):
+        """Автоматическое обновление статуса при сохранении"""
+        if self.quantity < self.min_quantity:
+            self.status = 'low'
+        else:
+            self.status = 'normal'
+        super().save(*args, **kwargs)
 
 
 class Category(models.Model):

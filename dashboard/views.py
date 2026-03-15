@@ -98,6 +98,13 @@ def use_material(request):
                 # Списываем материал из цеха
                 workshop_stock.quantity -= quantity
                 workshop_stock.updated_by = request.user
+                
+                # Автоматически обновляем статус перед сохранением
+                if workshop_stock.quantity < workshop_stock.min_quantity:
+                    workshop_stock.status = 'low'
+                else:
+                    workshop_stock.status = 'normal'
+                
                 workshop_stock.save()
                 
                 messages.success(
