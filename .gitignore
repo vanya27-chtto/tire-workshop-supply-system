@@ -1,37 +1,45 @@
 ```
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Logs and temp files
-*.log
-*.tmp
+# Database
+db.sqlite3
 
 # Environment
 .env
 .env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-
-# Dependencies
+.env.*
 .venv/
 venv/
-node_modules/
+ENV/
 
-# Build artifacts
-dist/
-build/
-target/
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Coverage
-.coverage
-coverage/
-htmlcov/
+# Logs
+*.log
 
 # OS
 .DS_Store
