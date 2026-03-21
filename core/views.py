@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock, OrderItem, PurchaseRequestItem
+from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock, OrderItem, RequestItem
 from core.models import WorkshopWarehouse, Supplier
 
 
