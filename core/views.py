@@ -55,9 +55,11 @@ def dashboard(request):
 def warehouse(request):
     """Страница склада - управление товарными запасами"""
     products = Product.objects.all().select_related('category')
+    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'updated_by')
     
     context = {
         'products': products,
+        'workshop_stocks': workshop_stocks,
         'user': request.user,
     }
     
