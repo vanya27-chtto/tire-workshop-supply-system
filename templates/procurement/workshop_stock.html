@@ -392,7 +392,7 @@
                                     </td>
                                     <td>{{ stock.updated_at|date:"d.m.Y H:i" }}<br>
                                         {% if stock.updated_by %}
-                                            <small style="color: #95a5a6;">{{ stock.updated_by.get_full_name|default:stock.updated_by.username|default:"—" }}</small>
+                                            <small style="color: #95a5a6;">{{ stock.updated_by.get_full_name|default:stock.updated_by.username }}</small>
                                         {% else %}
                                             <small style="color: #95a5a6;">—</small>
                                         {% endif %}
