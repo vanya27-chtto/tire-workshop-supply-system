@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказы - Система снабжения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Левая навигационная панель */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            color: #bdc3c7;
+            font-size: 12px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: #3498db;
+            box-shadow: 0 4px 8px rgba(52,152,219,0.3);
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #2c3e50;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52,152,219,0.3);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d68910;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        /* Карточки и таблицы */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Статусы */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .status-draft {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-sent {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-confirmed {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-partial {
+            background: #fff8e1;
+            color: #fbc02d;
+        }
+
+        .status-completed {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-cancelled {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .page-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>🏭 Система снабжения</h2>
+            <p>Шинный цех</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span>Главная</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'warehouse' %}" class="nav-link {% if request.resolver_match.url_name == 'warehouse' %}active{% endif %}">
+                    <span class="nav-icon">📦</span>
+                    <span>Склад</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'workshop_stock' %}" class="nav-link {% if request.resolver_match.url_name == 'workshop_stock' %}active{% endif %}">
+                    <span class="nav-icon">🔧</span>
+                    <span>Запасы цеха</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'suppliers' %}" class="nav-link {% if request.resolver_match.url_name == 'suppliers' %}active{% endif %}">
+                    <span class="nav-icon">👥</span>
+                    <span>Поставщики</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'orders' %}" class="nav-link {% if request.resolver_match.url_name == 'orders' %}active{% endif %}">
+                    <span class="nav-icon">🛒</span>
+                    <span>Заказы</span>
+                </a>
+            </li>
+            <li class="nav-item" style="margin-top: 30px;">
+                <a href="{% url 'logout' %}" class="nav-link">
+                    <span class="nav-icon">🚪</span>
+                    <span>Выход</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🛒 Заказы поставщикам</h1>
+            <a href="{% url 'create_order' %}" class="btn btn-primary">
+                <span>➕</span> Создать заказ
+            </a>
+        </div>
+
+        <!-- Список заказов -->
+        <div class="card">
+            <div class="card-header">
+                Все заказы
+            </div>
+            <div class="card-body">
+                {% if orders %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Номер заказа</th>
+                            <th>Поставщик</th>
+                            <th>Статус</th>
+                            <th>Сумма</th>
+                            <th>Дата создания</th>
+                            <th>Дата отправки</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td><strong>{{ order.order_number }}</strong></td>
+                            <td>{{ order.supplier.name }}</td>
+                            <td>
+                                <span class="status-badge status-{{ order.status }}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ order.total_amount|floatformat:2 }} руб.</td>
+                            <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                {% if order.sent_at %}
+                                    {{ order.sent_at|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if order.status == 'draft' and order.supplier.email %}
+                                    <a href="{% url 'send_order' order.id %}" class="btn btn-success btn-sm">
+                                        📧 Отправить
+                                    </a>
+                                {% endif %}
+                                {% if order.status != 'draft' %}
+                                    <span style="color: #27ae60; font-size: 12px;">✓ Отправлен</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p style="text-align: center; color: #7f8c8d; padding: 40px;">
+                    Заказов пока нет. Создайте первый заказ!
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

@@ -1,8 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import F
-from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock
+from django.core.mail import send_mail
+from django.conf import settings
+from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock, OrderItem
 from core.models import WorkshopWarehouse, Supplier
 
 
@@ -119,6 +121,230 @@ def workshop_stock(request):
     }
     
     return render(request, 'procurement/workshop_stock.html', context)
+
+
+@login_required
+def orders(request):
+    """Страница заказов поставщикам"""
+    orders_list = PurchaseOrder.objects.all().select_related('supplier', 'created_by').order_by('-created_at')
+    suppliers_list = Supplier.objects.filter(is_active=True).order_by('name')
+    
+    context = {
+        'orders': orders_list,
+        'suppliers': suppliers_list,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/orders.html', context)
+
+
+@login_required
+def create_order(request):
+    """Создание нового заказа поставщику"""
+    if request.method == 'POST':
+        supplier_id = request.POST.get('supplier')
+        product_ids = request.POST.getlist('products[]')
+        quantities = request.POST.getlist('quantities[]')
+        prices = request.POST.getlist('prices[]')
+        notes = request.POST.get('notes', '')
+        send_email = request.POST.get('send_email') == 'on'
+        
+        try:
+            supplier = get_object_or_404(Supplier, id=supplier_id)
+            
+            # Создаем заказ
+            order = PurchaseOrder.objects.create(
+                supplier=supplier,
+                status=PurchaseOrder.Status.DRAFT,
+                notes=notes,
+                created_by=request.user
+            )
+            
+            # Добавляем позиции заказа
+            total = 0
+            order_items_data = []
+            for i, product_id in enumerate(product_ids):
+                if product_id and quantities[i]:
+                    product = get_object_or_404(Product, id=product_id)
+                    quantity = int(quantities[i])
+                    price = float(prices[i]) if prices[i] else product.price
+                    
+                    order_item = OrderItem.objects.create(
+                        order=order,
+                        product=product,
+                        quantity_ordered=quantity,
+                        unit_price=price,
+                        subtotal=quantity * price
+                    )
+                    order_items_data.append({
+                        'product': product.name,
+                        'quantity': quantity,
+                        'unit_price': price,
+                        'subtotal': quantity * price
+                    })
+                    total += quantity * price
+            
+            # Обновляем общую сумму
+            order.total_amount = total
+            order.save()
+            
+            # Отправляем email поставщику
+            if send_email and supplier.email:
+                send_order_email(order, order_items_data, total)
+                messages.success(request, f'Заказ {order.order_number} создан и отправлен поставщику {supplier.name}!')
+            else:
+                messages.success(request, f'Заказ {order.order_number} создан!')
+            
+            return redirect('orders')
+            
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании заказа: {str(e)}')
+    
+    suppliers_list = Supplier.objects.filter(is_active=True).order_by('name')
+    products_list = Product.objects.all().order_by('name')
+    
+    context = {
+        'suppliers': suppliers_list,
+        'products': products_list,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/create_order.html', context)
+
+
+@login_required
+def send_order(request, order_id):
+    """Отправка заказа поставщику по email"""
+    order = get_object_or_404(PurchaseOrder, id=order_id)
+    
+    if not order.supplier.email:
+        messages.error(request, 'У поставщика не указан email!')
+        return redirect('orders')
+    
+    # Получаем позиции заказа
+    order_items_data = []
+    for item in order.items.all():
+        order_items_data.append({
+            'product': item.product.name,
+            'quantity': item.quantity_ordered,
+            'unit_price': float(item.unit_price),
+            'subtotal': float(item.subtotal)
+        })
+    
+    if send_order_email(order, order_items_data, float(order.total_amount)):
+        order.status = PurchaseOrder.Status.SENT
+        from django.utils import timezone
+        order.sent_at = timezone.now()
+        order.save()
+        messages.success(request, f'Заказ {order.order_number} отправлен поставщику {order.supplier.name}!')
+    else:
+        messages.error(request, 'Ошибка при отправке email. Проверьте настройки SMTP.')
+    
+    return redirect('orders')
+
+
+def send_order_email(order, items, total):
+    """Отправка email с заказом поставщику"""
+    if not order.supplier.email:
+        return False
+    
+    subject = f'Заказ {order.order_number} от {order.created_at.strftime("%d.%m.%Y")}'
+    
+    # Формируем HTML тело письма
+    html_message = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; }}
+            table {{ border-collapse: collapse; width: 100%; margin-top: 20px; }}
+            th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+            th {{ background-color: #4CAF50; color: white; }}
+            tr:nth-child(even) {{ background-color: #f2f2f2; }}
+            .total {{ font-weight: bold; font-size: 1.2em; }}
+        </style>
+    </head>
+    <body>
+        <h2>Новый заказ {order.order_number}</h2>
+        <p><strong>Дата:</strong> {order.created_at.strftime("%d.%m.%Y %H:%M")}</p>
+        <p><strong>Поставщик:</strong> {order.supplier.name}</p>
+        {f'<p><strong>Контактное лицо:</strong> {order.supplier.contact_person}</p>' if order.supplier.contact_person else ''}
+        
+        <h3>Позиции заказа:</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Товар</th>
+                    <th>Количество</th>
+                    <th>Цена за ед.</th>
+                    <th>Сумма</th>
+                </tr>
+            </thead>
+            <tbody>
+    """
+    
+    for i, item in enumerate(items, 1):
+        html_message += f"""
+                <tr>
+                    <td>{i}</td>
+                    <td>{item['product']}</td>
+                    <td>{item['quantity']}</td>
+                    <td>{item['unit_price']:.2f} руб.</td>
+                    <td>{item['subtotal']:.2f} руб.</td>
+                </tr>
+        """
+    
+    html_message += f"""
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" style="text-align: right;"><strong>Итого:</strong></td>
+                    <td class="total">{total:.2f} руб.</td>
+                </tr>
+            </tfoot>
+        </table>
+        
+        <h3>Дополнительная информация:</h3>
+        <p>{order.notes if order.notes else 'Нет дополнительных примечаний.'}</p>
+        
+        <p style="margin-top: 30px; color: #666; font-size: 12px;">
+            Это письмо было отправлено автоматически системой управления снабжением.<br>
+            Пожалуйста, подтвердите получение и сроки выполнения заказа.
+        </p>
+    </body>
+    </html>
+    """
+    
+    # Текстовая версия для клиентов без HTML
+    text_message = f"""
+Заказ {order.order_number} от {order.created_at.strftime("%d.%m.%Y")}
+
+Поставщик: {order.supplier.name}
+{f'Контактное лицо: {order.supplier.contact_person}' if order.supplier.contact_person else ''}
+
+Позиции заказа:
+"""
+    for i, item in enumerate(items, 1):
+        text_message += f"{i}. {item['product']} - {item['quantity']} шт. x {item['unit_price']:.2f} руб. = {item['subtotal']:.2f} руб.\n"
+    
+    text_message += f"\nИтого: {total:.2f} руб.\n\n"
+    text_message += f"Примечание: {order.notes if order.notes else 'Нет дополнительных примечаний.'}\n\n"
+    text_message += "Это письмо было отправлено автоматически системой управления снабжением.\n"
+    text_message += "Пожалуйста, подтвердите получение и сроки выполнения заказа."
+    
+    try:
+        send_mail(
+            subject=subject,
+            message=text_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[order.supplier.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        return True
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False
 
 
 @login_required
