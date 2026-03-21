@@ -56,7 +56,7 @@ def dashboard(request):
 def warehouse(request):
     """Страница склада - управление товарными запасами"""
     products = Product.objects.all().select_related('category')
-    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'responsible_person')
+    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'updated_by')
     workshop_warehouses = WorkshopWarehouse.objects.all().select_related('product', 'responsible_person')
     
     context = {
@@ -98,7 +98,7 @@ def update_product_stock(request, product_id):
 @login_required
 def workshop_stock(request):
     """Страница запасов цеха"""
-    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'responsible_person')
+    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'updated_by')
     
     context = {
         'workshop_stocks': workshop_stocks,

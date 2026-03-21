@@ -411,7 +411,7 @@
                                     </td>
                                     <td>{{ warehouse.last_updated|date:"d.m.Y H:i" }}<br>
                                         {% if warehouse.responsible_person %}
-                                            <small style="color: #95a5a6;">{{ warehouse.responsible_person.get_full_name|default:warehouse.responsible_person.username|default:"—" }}</small>
+                                            <small style="color: #95a5a6;">{{ warehouse.responsible_person.get_full_name|default:warehouse.responsible_person.username }}</small>
                                         {% else %}
                                             <small style="color: #95a5a6;">—</small>
                                         {% endif %}
