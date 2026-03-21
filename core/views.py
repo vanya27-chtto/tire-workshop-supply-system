@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import F
 from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock
-from core.models import WorkshopWarehouse
+from core.models import WorkshopWarehouse, Supplier
 
 
 @login_required
@@ -50,6 +50,19 @@ def dashboard(request):
     }
     
     return render(request, 'dashboard.html', context)
+
+
+@login_required
+def suppliers(request):
+    """Страница поставщиков - управление поставщиками"""
+    suppliers_list = Supplier.objects.all().order_by('name')
+    
+    context = {
+        'suppliers': suppliers_list,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/suppliers.html', context)
 
 
 @login_required
