@@ -1,1 +1,1 @@
-Nothing should be ignored based on the provided file changes, as they consist only of source code and template files (.html, .py) without any build artifacts, dependencies, or temporary files that require ignoring.
+Nothing needs to be added to .gitignore since only a Python source file (`core/views.py`) was modified and there are no build artifacts, dependencies, or temporary files in the changes.
