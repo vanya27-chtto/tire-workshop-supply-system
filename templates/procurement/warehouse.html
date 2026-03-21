@@ -410,7 +410,11 @@
                                         {% endif %}
                                     </td>
                                     <td>{{ warehouse.last_updated|date:"d.m.Y H:i" }}<br>
-                                        <small style="color: #95a5a6;">{{ warehouse.responsible_person.get_full_name|default:warehouse.responsible_person.username|default:"—" }}</small>
+                                        {% if warehouse.responsible_person %}
+                                            <small style="color: #95a5a6;">{{ warehouse.responsible_person.get_full_name|default:warehouse.responsible_person.username|default:"—" }}</small>
+                                        {% else %}
+                                            <small style="color: #95a5a6;">—</small>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -465,17 +469,17 @@
                                     <td>
                                         <form method="post" action="{% url 'update_product_stock' product.id %}" style="display:inline;">
                                             {% csrf_token %}
-                                            <input type="number" name="current_stock" value="{{ product.quantity }}" 
+                                            <input type="number" name="current_stock" value="{{ product.current_stock }}" 
                                                    min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                         </td>
                                         <td>
-                                            <input type="number" name="min_stock_level" value="{{ product.min_quantity }}" 
+                                            <input type="number" name="min_stock_level" value="{{ product.min_stock_level }}" 
                                                    min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                         </td>
                                         <td>
                                             <button type="submit" class="btn-add" style="padding:4px 10px; font-size:12px;">Сохранить</button>
                                         </form>
-                                        {% if product.quantity <= product.min_quantity %}
+                                        {% if product.current_stock <= product.min_stock_level %}
                                             <span class="stock-badge stock-low">Низкий запас</span>
                                         {% else %}
                                             <span class="stock-badge stock-good">В норме</span>

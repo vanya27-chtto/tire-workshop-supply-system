@@ -370,13 +370,13 @@
                                     </td>
                                     <td>{{ stock.product.sku }}</td>
                                     <td>
-                                        <span class="quantity-badge {% if stock.needs_replenishment %}quantity-low{% else %}quantity-good{% endif %}">
+                                        <span class="quantity-badge {% if stock.is_low_stock %}quantity-low{% else %}quantity-good{% endif %}">
                                             {{ stock.quantity }}
                                         </span>
                                     </td>
                                     <td>{{ stock.min_quantity }}</td>
                                     <td>
-                                        {% if stock.needs_replenishment %}
+                                        {% if stock.is_low_stock %}
                                             <span style="color: #e74c3c; font-size: 12px;">⚠️ Низкий</span>
                                         {% else %}
                                             <span style="color: #27ae60; font-size: 12px;">✓ В норме</span>
@@ -390,8 +390,12 @@
                                             <span style="color: #95a5a6;">—</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ stock.last_updated|date:"d.m.Y H:i" }}<br>
-                                        <small style="color: #95a5a6;">{{ stock.responsible_person.get_full_name|default:stock.responsible_person.username|default:"—" }}</small>
+                                    <td>{{ stock.updated_at|date:"d.m.Y H:i" }}<br>
+                                        {% if stock.updated_by %}
+                                            <small style="color: #95a5a6;">{{ stock.updated_by.get_full_name|default:stock.updated_by.username|default:"—" }}</small>
+                                        {% else %}
+                                            <small style="color: #95a5a6;">—</small>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         <button class="btn-add" 
