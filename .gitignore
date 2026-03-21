@@ -1,1 +1,13 @@
-Nothing should be ignored in this case, as the changes only involve HTML template files which are source code files and not build artifacts, dependencies, or temporary files.
+```
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Compiled Python files in specific directories
+core/__pycache__/
+dashboard/__pycache__/
+procurement/__pycache__/
+tire_workshop_supply_system/__pycache__/
+```
