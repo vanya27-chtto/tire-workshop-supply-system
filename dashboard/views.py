@@ -62,18 +62,16 @@ def dashboard(request):
     
     # Данные для сотрудника цеха
     if is_workshop or is_admin:
-        # Материалы в цеху (из таблицы WorkshopStock)
-        workshop_materials = WorkshopStock.objects.filter(
-            quantity__gt=0
-        ).select_related('product').order_by('product__category', 'product__name')[:20]
+        # Материалы в цеху (из таблицы WorkshopStock) - показываем все записи
+        workshop_materials = WorkshopStock.objects.select_related('product').order_by('product__category', 'product__name')
         
         # Общая стоимость материалов в цеху
         total_workshop_value = workshop_materials.aggregate(
             total=Sum('quantity')
         )['total'] or 0
         
-        # Склад цеха (из таблицы WorkshopWarehouse)
-        workshop_warehouse_items = WorkshopWarehouse.objects.all().select_related('product').order_by('product__category', 'product__name')
+        # Склад цеха (из таблицы WorkshopWarehouse) - показываем все записи
+        workshop_warehouse_items = WorkshopWarehouse.objects.select_related('product').order_by('product__category', 'product__name')
         
         # Общий объем на складе цеха
         total_workshop_warehouse_value = workshop_warehouse_items.aggregate(
