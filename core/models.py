@@ -302,6 +302,21 @@ class WorkshopStock(models.Model):
         """Проверка необходимости пополнения со склада"""
         return self.quantity <= self.min_quantity
     
+    @property
+    def is_low_stock(self):
+        """Проверка низкого запаса"""
+        return self.quantity <= self.min_quantity
+    
+    @property
+    def updated_at(self):
+        """Псевдоним для last_updated для совместимости с шаблоном"""
+        return self.last_updated
+    
+    @property
+    def updated_by(self):
+        """Ответственное лицо (для совместимости с шаблоном)"""
+        return self.responsible_person
+    
     def save(self, *args, **kwargs):
         """Автоматическое обновление статуса при сохранении"""
         if self.quantity <= self.min_quantity:
