@@ -365,7 +365,7 @@
                 <button class="btn-add">+ Пополнить запас</button>
             </div>
             <div class="table-container">
-                {% if workshop_stocks %}
+                {% if workshop_warehouses %}
                     <table class="products-table">
                         <thead>
                             <tr>
@@ -380,35 +380,37 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for stock in workshop_stocks %}
+                            {% for warehouse in workshop_warehouses %}
                                 <tr>
                                     <td>
-                                        <span class="product-name">{{ stock.product.name }}</span>
+                                        <span class="product-name">{{ warehouse.product.name }}</span>
                                     </td>
-                                    <td>{{ stock.product.sku }}</td>
+                                    <td>{{ warehouse.product.sku }}</td>
                                     <td>
-                                        <span class="quantity-badge {% if stock.is_low_stock %}stock-low{% else %}stock-good{% endif %}">
-                                            {{ stock.quantity }}
+                                        <span class="quantity-badge {% if warehouse.needs_replenishment %}stock-low{% else %}stock-good{% endif %}">
+                                            {{ warehouse.quantity }}
                                         </span>
                                     </td>
-                                    <td>{{ stock.min_quantity }}</td>
+                                    <td>{{ warehouse.min_quantity }}</td>
                                     <td>
-                                        {% if stock.is_low_stock %}
+                                        {% if warehouse.needs_replenishment %}
                                             <span class="stock-badge stock-low">Низкий</span>
+                                        {% elif warehouse.is_overstocked %}
+                                            <span class="stock-badge" style="background: #fff3cd; color: #856404;">Избыток</span>
                                         {% else %}
                                             <span class="stock-badge stock-good">В норме</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ stock.product.unit }}</td>
+                                    <td>{{ warehouse.product.unit }}</td>
                                     <td>
-                                        {% if stock.location %}
-                                            <span class="location-badge">{{ stock.location }}</span>
+                                        {% if warehouse.location %}
+                                            <span class="location-badge">{{ warehouse.location }}</span>
                                         {% else %}
                                             <span style="color: #95a5a6;">—</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ stock.updated_at|date:"d.m.Y H:i" }}<br>
-                                        <small style="color: #95a5a6;">{{ stock.updated_by.get_full_name|default:stock.updated_by.username|default:"—" }}</small>
+                                    <td>{{ warehouse.last_updated|date:"d.m.Y H:i" }}<br>
+                                        <small style="color: #95a5a6;">{{ warehouse.responsible_person.get_full_name|default:warehouse.responsible_person.username|default:"—" }}</small>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -463,17 +465,17 @@
                                     <td>
                                         <form method="post" action="{% url 'update_product_stock' product.id %}" style="display:inline;">
                                             {% csrf_token %}
-                                            <input type="number" name="current_stock" value="{{ product.current_stock }}" 
+                                            <input type="number" name="current_stock" value="{{ product.quantity }}" 
                                                    min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                         </td>
                                         <td>
-                                            <input type="number" name="min_stock_level" value="{{ product.min_stock_level }}" 
+                                            <input type="number" name="min_stock_level" value="{{ product.min_quantity }}" 
                                                    min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                         </td>
                                         <td>
                                             <button type="submit" class="btn-add" style="padding:4px 10px; font-size:12px;">Сохранить</button>
                                         </form>
-                                        {% if product.current_stock <= product.min_stock_level %}
+                                        {% if product.quantity <= product.min_quantity %}
                                             <span class="stock-badge stock-low">Низкий запас</span>
                                         {% else %}
                                             <span class="stock-badge stock-good">В норме</span>

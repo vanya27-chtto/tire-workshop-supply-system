@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import F
 from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock
+from core.models import WorkshopWarehouse
 
 
 @login_required
@@ -55,11 +56,13 @@ def dashboard(request):
 def warehouse(request):
     """Страница склада - управление товарными запасами"""
     products = Product.objects.all().select_related('category')
-    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'updated_by')
+    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'responsible_person')
+    workshop_warehouses = WorkshopWarehouse.objects.all().select_related('product', 'responsible_person')
     
     context = {
         'products': products,
         'workshop_stocks': workshop_stocks,
+        'workshop_warehouses': workshop_warehouses,
         'user': request.user,
     }
     
@@ -95,7 +98,7 @@ def update_product_stock(request, product_id):
 @login_required
 def workshop_stock(request):
     """Страница запасов цеха"""
-    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'updated_by')
+    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'responsible_person')
     
     context = {
         'workshop_stocks': workshop_stocks,
