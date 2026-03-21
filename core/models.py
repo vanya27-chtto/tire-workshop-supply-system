@@ -309,3 +309,82 @@ class WorkshopStock(models.Model):
         else:
             self.status = 'normal'
         super().save(*args, **kwargs)
+
+
+class WorkshopWarehouse(models.Model):
+    """Склад цеха - основной запас товаров в большем количестве"""
+    
+    STATUS_CHOICES = [
+        ('normal', 'В норме'),
+        ('low', 'Низкий запас'),
+        ('excess', 'Избыток'),
+    ]
+    
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='workshop_warehouses',
+        verbose_name=_('Товар')
+    )
+    quantity = models.PositiveIntegerField(_('Количество на складе цеха'), default=0)
+    location = models.CharField(
+        _('Место хранения'), 
+        max_length=100, 
+        blank=True,
+        help_text=_('Например: Зона А-1, Секция Б-2')
+    )
+    responsible_person = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='workshop_warehouses',
+        verbose_name=_('Ответственный')
+    )
+    min_quantity = models.PositiveIntegerField(
+        _('Минимальный уровень запаса'), 
+        default=50,
+        help_text=_('При достижении этого уровня требуется заказ у поставщика')
+    )
+    max_quantity = models.PositiveIntegerField(
+        _('Максимальный уровень запаса'), 
+        default=1000,
+        help_text=_('Максимально допустимое количество на складе')
+    )
+    status = models.CharField(
+        _('Статус'),
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='normal'
+    )
+    last_updated = models.DateTimeField(_('Дата последнего обновления'), auto_now=True)
+    notes = models.TextField(_('Примечание'), blank=True)
+
+    class Meta:
+        verbose_name = _('Склад цеха')
+        verbose_name_plural = _('Склады цеха')
+        ordering = ['product__name']
+        unique_together = ['product', 'location']
+
+    def __str__(self):
+        return f"{self.product.name} - {self.quantity} {self.product.unit} ({self.location})"
+
+    @property
+    def needs_replenishment(self):
+        """Проверка необходимости заказа у поставщика"""
+        return self.quantity <= self.min_quantity
+    
+    @property
+    def is_overstocked(self):
+        """Проверка на избыток товара"""
+        return self.quantity >= self.max_quantity
+    
+    def save(self, *args, **kwargs):
+        """Автоматическое обновление статуса при сохранении"""
+        if self.quantity <= self.min_quantity:
+            self.status = 'low'
+        elif self.quantity >= self.max_quantity:
+            self.status = 'excess'
+        else:
+            self.status = 'normal'
+        super().save(*args, **kwargs)
