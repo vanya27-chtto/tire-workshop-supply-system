@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from core.models import Product, PurchaseRequest, PurchaseOrder, Supplier, WorkshopStock
+from core.models import Product, PurchaseRequest, PurchaseOrder, Supplier, WorkshopStock, WorkshopWarehouse
 from django.db.models import Sum, F
 from datetime import datetime
 
@@ -72,9 +72,19 @@ def dashboard(request):
             total=Sum('quantity')
         )['total'] or 0
         
+        # Склад цеха (из таблицы WorkshopWarehouse)
+        workshop_warehouse_items = WorkshopWarehouse.objects.all().select_related('product').order_by('product__category', 'product__name')
+        
+        # Общий объем на складе цеха
+        total_workshop_warehouse_value = workshop_warehouse_items.aggregate(
+            total=Sum('quantity')
+        )['total'] or 0
+        
         context.update({
             'workshop_materials': workshop_materials,
             'total_workshop_value': total_workshop_value,
+            'workshop_warehouse_items': workshop_warehouse_items,
+            'total_workshop_warehouse_value': total_workshop_warehouse_value,
         })
     
     return render(request, 'dashboard/dashboard.html', context)
