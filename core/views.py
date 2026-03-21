@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock, OrderItem
+from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock, OrderItem, PurchaseRequestItem
 from core.models import WorkshopWarehouse, Supplier
 
 
@@ -121,6 +121,65 @@ def workshop_stock(request):
     }
     
     return render(request, 'procurement/workshop_stock.html', context)
+
+
+@login_required
+def requests_view(request):
+    """Страница заявок от сотрудников цеха"""
+    requests_list = PurchaseRequest.objects.all().select_related('requester').order_by('-created_at')
+    
+    context = {
+        'requests': requests_list,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/requests.html', context)
+
+
+@login_required
+def create_request(request):
+    """Создание новой заявки от сотрудника цеха"""
+    if request.method == 'POST':
+        items_description = request.POST.get('items_description', '')
+        product_ids = request.POST.getlist('products[]')
+        quantities = request.POST.getlist('quantities[]')
+        notes_list = request.POST.getlist('notes[]')
+        
+        try:
+            # Создаем заявку
+            purchase_request = PurchaseRequest.objects.create(
+                requester=request.user,
+                items_description=items_description
+            )
+            
+            # Добавляем позиции заявки
+            for i, product_id in enumerate(product_ids):
+                if product_id and quantities[i]:
+                    product = get_object_or_404(Product, id=product_id)
+                    quantity = int(quantities[i])
+                    notes = notes_list[i] if i < len(notes_list) else ''
+                    
+                    PurchaseRequestItem.objects.create(
+                        request=purchase_request,
+                        product=product,
+                        quantity_requested=quantity,
+                        notes=notes
+                    )
+            
+            messages.success(request, f'Заявка {purchase_request.request_number} создана!')
+            return redirect('requests')
+            
+        except Exception as e:
+            messages.error(request, f'Ошибка при создании заявки: {str(e)}')
+    
+    products_list = Product.objects.all().order_by('name')
+    
+    context = {
+        'products': products_list,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/create_request.html', context)
 
 
 @login_required
