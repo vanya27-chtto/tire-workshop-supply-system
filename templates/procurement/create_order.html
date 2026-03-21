@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создание заказа - Система снабжения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Левая навигационная панель */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            color: #bdc3c7;
+            font-size: 12px;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .nav-item {
+            margin-bottom: 5px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: #3498db;
+            box-shadow: 0 4px 8px rgba(52,152,219,0.3);
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* Основной контент */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            color: #2c3e50;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52,152,219,0.3);
+        }
+
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #229954;
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        /* Карточки и формы */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52,152,219,0.1);
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        /* Таблица товаров */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .items-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .items-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .total-row {
+            font-weight: bold;
+            font-size: 16px;
+            background: #e8f4fd;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+
+            .items-table {
+                font-size: 14px;
+            }
+
+            .items-table th,
+            .items-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигационная панель -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>🏭 Система снабжения</h2>
+            <p>Шинный цех</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span>Главная</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'warehouse' %}" class="nav-link {% if request.resolver_match.url_name == 'warehouse' %}active{% endif %}">
+                    <span class="nav-icon">📦</span>
+                    <span>Склад</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'workshop_stock' %}" class="nav-link {% if request.resolver_match.url_name == 'workshop_stock' %}active{% endif %}">
+                    <span class="nav-icon">🔧</span>
+                    <span>Запасы цеха</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'suppliers' %}" class="nav-link {% if request.resolver_match.url_name == 'suppliers' %}active{% endif %}">
+                    <span class="nav-icon">👥</span>
+                    <span>Поставщики</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'orders' %}" class="nav-link {% if request.resolver_match.url_name == 'orders' %}active{% endif %}">
+                    <span class="nav-icon">🛒</span>
+                    <span>Заказы</span>
+                </a>
+            </li>
+            <li class="nav-item" style="margin-top: 30px;">
+                <a href="{% url 'logout' %}" class="nav-link">
+                    <span class="nav-icon">🚪</span>
+                    <span>Выход</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Основной контент -->
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">➕ Создание заказа</h1>
+        </div>
+
+        <form method="POST" id="orderForm">
+            {% csrf_token %}
+            
+            <!-- Основная информация -->
+            <div class="card">
+                <div class="card-header">
+                    Информация о заказе
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Поставщик *</label>
+                        <select name="supplier" class="form-control" required id="supplierSelect">
+                            <option value="">Выберите поставщика</option>
+                            {% for supplier in suppliers %}
+                                <option value="{{ supplier.id }}" data-email="{{ supplier.email }}">
+                                    {{ supplier.name }}{% if supplier.email %} ({{ supplier.email }}){% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Примечание</label>
+                        <textarea name="notes" class="form-control" placeholder="Дополнительные комментарии к заказу..."></textarea>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" name="send_email" id="sendEmail" checked>
+                        <label for="sendEmail">Отправить заказ поставщику по email</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Позиции заказа -->
+            <div class="card">
+                <div class="card-header">
+                    Товары в заказе
+                </div>
+                <div class="card-body">
+                    <table class="items-table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Товар</th>
+                                <th style="width: 20%;">Количество</th>
+                                <th style="width: 20%;">Цена за ед. (руб.)</th>
+                                <th style="width: 15%;">Сумма</th>
+                                <th style="width: 5%;">Действие</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr class="item-row">
+                                <td>
+                                    <select name="products[]" class="form-control product-select" required onchange="updatePrice(this)">
+                                        <option value="">Выберите товар</option>
+                                        {% for product in products %}
+                                            <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} (остаток: {{ product.quantity }} {{ product.unit }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <input type="number" name="quantities[]" class="form-control quantity-input" min="1" value="1" required onchange="calculateRowTotal(this)">
+                                </td>
+                                <td>
+                                    <input type="number" name="prices[]" class="form-control price-input" min="0" step="0.01" value="0" required onchange="calculateRowTotal(this)">
+                                </td>
+                                <td class="row-total">0.00 руб.</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <td colspan="3" style="text-align: right;">Итого:</td>
+                                <td id="grandTotal">0.00 руб.</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <button type="button" class="btn btn-secondary" onclick="addRow()">+ Добавить товар</button>
+                </div>
+            </div>
+
+            <!-- Кнопки действий -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <a href="{% url 'orders' %}" class="btn btn-secondary">Отмена</a>
+                <button type="submit" class="btn btn-success">💾 Создать заказ</button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        // Обновление цены при выборе товара
+        function updatePrice(selectElement) {
+            const row = selectElement.closest('tr');
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const price = selectedOption.dataset.price || 0;
+            const priceInput = row.querySelector('.price-input');
+            priceInput.value = price;
+            calculateRowTotal(priceInput);
+        }
+
+        // Расчет суммы строки
+        function calculateRowTotal(inputElement) {
+            const row = inputElement.closest('tr');
+            const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            const total = quantity * price;
+            row.querySelector('.row-total').textContent = total.toFixed(2) + ' руб.';
+            calculateGrandTotal();
+        }
+
+        // Расчет общей суммы
+        function calculateGrandTotal() {
+            let grandTotal = 0;
+            document.querySelectorAll('.item-row').forEach(row => {
+                const quantity = parseFloat(row.querySelector('.quantity-input').value) || 0;
+                const price = parseFloat(row.querySelector('.price-input').value) || 0;
+                grandTotal += quantity * price;
+            });
+            document.getElementById('grandTotal').textContent = grandTotal.toFixed(2) + ' руб.';
+        }
+
+        // Добавление новой строки
+        function addRow() {
+            const tbody = document.getElementById('itemsBody');
+            const newRow = document.createElement('tr');
+            newRow.className = 'item-row';
+            newRow.innerHTML = `
+                <td>
+                    <select name="products[]" class="form-control product-select" required onchange="updatePrice(this)">
+                        <option value="">Выберите товар</option>
+                        {% for product in products %}
+                            <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} (остаток: {{ product.quantity }} {{ product.unit }})</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="quantities[]" class="form-control quantity-input" min="1" value="1" required onchange="calculateRowTotal(this)">
+                </td>
+                <td>
+                    <input type="number" name="prices[]" class="form-control price-input" min="0" step="0.01" value="0" required onchange="calculateRowTotal(this)">
+                </td>
+                <td class="row-total">0.00 руб.</td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        // Удаление строки
+        function removeRow(button) {
+            const tbody = document.getElementById('itemsBody');
+            if (tbody.querySelectorAll('tr').length > 1) {
+                button.closest('tr').remove();
+                calculateGrandTotal();
+            } else {
+                alert('В заказе должен быть хотя бы один товар!');
+            }
+        }
+
+        // Проверка формы перед отправкой
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            const supplierSelect = document.getElementById('supplierSelect');
+            if (!supplierSelect.value) {
+                e.preventDefault();
+                alert('Пожалуйста, выберите поставщика!');
+                supplierSelect.focus();
+                return false;
+            }
+
+            // Проверка наличия товаров
+            let hasProducts = false;
+            document.querySelectorAll('.product-select').forEach(select => {
+                if (select.value) hasProducts = true;
+            });
+
+            if (!hasProducts) {
+                e.preventDefault();
+                alert('Пожалуйста, добавьте хотя бы один товар в заказ!');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>
