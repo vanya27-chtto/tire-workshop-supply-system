@@ -27,10 +27,8 @@ def dashboard(request):
     
     # Данные для товароведа
     if is_merchandiser or is_admin:
-        # Уведомления о заявках на согласование
-        pending_requests = PurchaseRequest.objects.filter(
-            status='pending'
-        ).select_related('requester')
+        # Уведомления о заявках на согласование (показываем все заявки, т.к. статуса нет)
+        pending_requests = PurchaseRequest.objects.select_related('requester').order_by('-created_at')[:10]
         
         # Уведомления о низком запасе на складе (из таблицы Product)
         low_stock_warehouse = Product.objects.filter(
@@ -44,8 +42,8 @@ def dashboard(request):
         
         # Статистика по заказам
         total_orders = PurchaseOrder.objects.count()
-        pending_orders = PurchaseOrder.objects.filter(status='draft').count()
-        sent_orders = PurchaseOrder.objects.filter(status='sent').count()
+        pending_orders = PurchaseOrder.objects.filter(status='draft').count() if hasattr(PurchaseOrder, 'status') else 0
+        sent_orders = PurchaseOrder.objects.filter(status='sent').count() if hasattr(PurchaseOrder, 'status') else 0
         
         # Недавние заявки
         recent_requests = PurchaseRequest.objects.all().order_by('-created_at')[:5]
