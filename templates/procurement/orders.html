@@ -292,7 +292,13 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'orders' %}" class="nav-link {% if request.resolver_match.url_name == 'orders' %}active{% endif %}">
+                <a href="{% url 'requests' %}" class="nav-link {% if request.resolver_match.url_name == 'requests' or request.resolver_match.url_name == 'create_request' %}active{% endif %}">
+                    <span class="nav-icon">📋</span>
+                    <span>Заявки</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'orders' %}" class="nav-link {% if request.resolver_match.url_name == 'orders' or request.resolver_match.url_name == 'create_order' %}active{% endif %}">
                     <span class="nav-icon">🛒</span>
                     <span>Заказы</span>
                 </a>
