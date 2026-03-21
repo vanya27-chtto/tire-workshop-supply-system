@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поставщики - Система снабжения</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Левая навигационная панель */
+        .sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header h2 {
+            color: white;
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-header p {
+            color: #bdc3c7;
+            font-size: 12px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 10px;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #ecf0f1;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .sidebar-menu a:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .sidebar-menu .menu-icon {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #e74c3c;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        /* Основная область контента */
+        .main-content {
+            margin-left: 260px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: inline-block;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .user-info span {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        /* Карточка */
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+            margin-bottom: 25px;
+        }
+
+        .card-header {
+            padding: 20px;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h3 {
+            color: #2c3e50;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-header .widget-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Таблица */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .data-table td {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Статусы */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Кнопки */
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-edit {
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-edit:hover {
+            background: #2980b9;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+        }
+
+        .actions-cell .btn {
+            margin-right: 5px;
+        }
+
+        /* Пустое состояние */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #2c3e50;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-cancel {
+            padding: 10px 20px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: #bdc3c7;
+        }
+
+        .btn-submit {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Левая навигационная панель -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>🔧 Система снабжения</h2>
+            <p>Шиномонтажная мастерская</p>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{% url 'dashboard' %}">
+                    <span class="menu-icon">📊</span>
+                    <span>Панель управления</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon">📋</span>
+                    <span>Заявки</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'warehouse' %}">
+                    <span class="menu-icon">📦</span>
+                    <span>Склад</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'workshop_stock' %}">
+                    <span class="menu-icon">🏭</span>
+                    <span>Запасы цеха</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon">🚚</span>
+                    <span>Заказы</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'suppliers' %}" class="active">
+                    <span class="menu-icon">👥</span>
+                    <span>Поставщики</span>
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <span class="menu-icon">📈</span>
+                    <span>Отчеты</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout-btn">
+                <span class="menu-icon">🚪</span>
+                <span>Выйти</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Основная область контента -->
+    <main class="main-content">
+        <div class="page-header">
+            <div class="user-info">
+                👤 <span>{{ user.get_full_name|default:user.username }}</span>
+                {% if user.is_staff %}
+                    <span style="color: #667eea; font-size: 12px; margin-left: 10px;">(Администратор)</span>
+                {% endif %}
+            </div>
+            <h1>Поставщики</h1>
+            <p>Управление поставщиками товаров и услуг</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <span class="widget-icon">👥</span>
+                    Список поставщиков
+                </h3>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        ➕ Добавить поставщика
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if suppliers %}
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Контактное лицо</th>
+                                    <th>Телефон</th>
+                                    <th>Email</th>
+                                    <th>Адрес</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for supplier in suppliers %}
+                                    <tr>
+                                        <td><strong>{{ supplier.name }}</strong></td>
+                                        <td>{{ supplier.contact_person|default:"—" }}</td>
+                                        <td>{{ supplier.phone|default:"—" }}</td>
+                                        <td>{{ supplier.email|default:"—" }}</td>
+                                        <td>{{ supplier.address|default:"—" }}</td>
+                                        <td>
+                                            <span class="status-badge {% if supplier.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                                {% if supplier.is_active %}Активен{% else %}Не активен{% endif %}
+                                            </span>
+                                        </td>
+                                        <td class="actions-cell">
+                                            <button class="btn btn-edit" onclick="openEditModal({{ supplier.id }}, '{{ supplier.name }}', '{{ supplier.contact_person|escapejs }}', '{{ supplier.phone|escapejs }}', '{{ supplier.email|escapejs }}', '{{ supplier.address|escapejs }}', {{ supplier.is_active|lower }})">✏️</button>
+                                            <button class="btn btn-delete" onclick="deleteSupplier({{ supplier.id }})">🗑️</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>Поставщики не найдены</p>
+                        <p style="margin-top: 10px;">Нажмите "Добавить поставщика", чтобы создать первого поставщика</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+
+    <!-- Модальное окно добавления/редактирования -->
+    <div id="supplierModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Добавить поставщика</h3>
+            </div>
+            <form id="supplierForm" method="post" action="{% url 'suppliers' %}">
+                {% csrf_token %}
+                <input type="hidden" id="supplierId" name="supplier_id">
+                
+                <div class="form-group">
+                    <label for="name">Название поставщика *</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact_person">Контактное лицо</label>
+                    <input type="text" id="contact_person" name="contact_person">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Телефон</label>
+                    <input type="text" id="phone" name="phone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email">
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Адрес</label>
+                    <textarea id="address" name="address"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="is_active">Статус</label>
+                    <select id="is_active" name="is_active">
+                        <option value="true">Активен</option>
+                        <option value="false">Не активен</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Отмена</button>
+                    <button type="submit" class="btn-submit">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const modal = document.getElementById('supplierModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const supplierId = document.getElementById('supplierId');
+        const nameInput = document.getElementById('name');
+        const contactPersonInput = document.getElementById('contact_person');
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+        const addressInput = document.getElementById('address');
+        const isActiveSelect = document.getElementById('is_active');
+
+        function openAddModal() {
+            modalTitle.textContent = 'Добавить поставщика';
+            supplierId.value = '';
+            nameInput.value = '';
+            contactPersonInput.value = '';
+            phoneInput.value = '';
+            emailInput.value = '';
+            addressInput.value = '';
+            isActiveSelect.value = 'true';
+            modal.classList.add('active');
+        }
+
+        function openEditModal(id, name, contactPerson, phone, email, address, isActive) {
+            modalTitle.textContent = 'Редактировать поставщика';
+            supplierId.value = id;
+            nameInput.value = name;
+            contactPersonInput.value = contactPerson || '';
+            phoneInput.value = phone || '';
+            emailInput.value = email || '';
+            addressInput.value = address || '';
+            isActiveSelect.value = isActive ? 'true' : 'false';
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        function deleteSupplier(id) {
+            if (confirm('Вы уверены, что хотите удалить этого поставщика?')) {
+                // Здесь будет логика удаления через AJAX или форму
+                alert('Функция удаления будет реализована в следующем обновлении');
+            }
+        }
+
+        // Закрытие модального окна при клике вне его
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Обработка отправки формы
+        document.getElementById('supplierForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const isAdd = !supplierId.value;
+            
+            // В реальном приложении здесь будет отправка на сервер через AJAX
+            // Для демонстрации просто закрываем форму и показываем сообщение
+            alert(isAdd ? 'Поставщик успешно добавлен!' : 'Данные поставщика обновлены!');
+            closeModal();
+            
+            // Перезагрузка страницы для обновления данных
+            location.reload();
+        });
+    </script>
+</body>
+</html>
