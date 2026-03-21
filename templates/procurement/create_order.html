@@ -77,6 +77,28 @@
             box-shadow: 0 4px 8px rgba(52,152,219,0.3);
         }
 
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #e74c3c;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(231, 76, 60, 0.1);
+        }
+
         .nav-icon {
             margin-right: 12px;
             font-size: 18px;
@@ -317,13 +339,14 @@
                     <span>Заказы</span>
                 </a>
             </li>
-            <li class="nav-item" style="margin-top: 30px;">
-                <a href="{% url 'logout' %}" class="nav-link">
-                    <span class="nav-icon">🚪</span>
-                    <span>Выход</span>
-                </a>
-            </li>
         </ul>
+
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout-btn">
+                <span class="nav-icon">🚪</span>
+                <span>Выход</span>
+            </a>
+        </div>
     </nav>
 
     <!-- Основной контент -->
