@@ -437,7 +437,7 @@
                 </a>
             </li>
             <li>
-                <a href="#">
+                <a href="{% url 'requests' %}">
                     <span class="menu-icon">📋</span>
                     <span>Заявки</span>
                 </a>
@@ -464,12 +464,6 @@
                 <a href="{% url 'suppliers' %}">
                     <span class="menu-icon">👥</span>
                     <span>Поставщики</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'requests' %}">
-                    <span class="menu-icon">📋</span>
-                    <span>Заявки</span>
                 </a>
             </li>
             <li>
@@ -519,7 +513,7 @@
                                     <div class="notification-content">
                                         <div class="notification-title">{{ notification.title }}</div>
                                         <div class="notification-description">{{ notification.description }}</div>
-                                        <div class="notification-date">{{ notification.date|date:"d.m.Y H:i" }}</div>
+                                        <div class="notification-date">{{ notification.date|date:"d.m.Y H:i:s" }}</div>
                                     </div>
                                 </li>
                             {% endfor %}

@@ -274,6 +274,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{% url 'requests' %}" class="nav-link {% if request.resolver_match.url_name == 'requests' or request.resolver_match.url_name == 'create_request' %}active{% endif %}">
+                    <span class="nav-icon">📋</span>
+                    <span>Заявки</span>
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="{% url 'warehouse' %}" class="nav-link {% if request.resolver_match.url_name == 'warehouse' %}active{% endif %}">
                     <span class="nav-icon">📦</span>
                     <span>Склад</span>
@@ -289,12 +295,6 @@
                 <a href="{% url 'suppliers' %}" class="nav-link {% if request.resolver_match.url_name == 'suppliers' %}active{% endif %}">
                     <span class="nav-icon">👥</span>
                     <span>Поставщики</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="{% url 'requests' %}" class="nav-link {% if request.resolver_match.url_name == 'requests' or request.resolver_match.url_name == 'create_request' %}active{% endif %}">
-                    <span class="nav-icon">📋</span>
-                    <span>Заявки</span>
                 </a>
             </li>
             <li class="nav-item">
