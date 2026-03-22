@@ -434,3 +434,70 @@ def update_workshop_stock(request, stock_id):
             messages.error(request, f'Ошибка: {str(e)}')
     
     return redirect('workshop_stock')
+
+
+@login_required
+def replenish_workshop_warehouse(request, warehouse_id):
+    """Пополнение запаса склада цеха со основного склада"""
+    if request.method == 'POST':
+        try:
+            from core.models import WorkshopWarehouse
+            warehouse = WorkshopWarehouse.objects.get(id=warehouse_id)
+            quantity_to_add = int(request.POST.get('quantity_to_add', 0))
+            
+            if quantity_to_add > 0:
+                # Проверяем, достаточно ли товара на основном складе
+                product = warehouse.product
+                if product.current_stock >= quantity_to_add:
+                    # Списываем с основного склада
+                    product.current_stock -= quantity_to_add
+                    product.save()
+                    
+                    # Добавляем в склад цеха
+                    warehouse.quantity += quantity_to_add
+                    warehouse.responsible_person = request.user
+                    warehouse.save()
+                    
+                    messages.success(
+                        request,
+                        f'Склад цеха пополнен: "{product.name}" добавлено {quantity_to_add} {product.unit}'
+                    )
+                else:
+                    messages.error(
+                        request,
+                        f'Недостаточно товара на складе. Доступно: {product.current_stock} {product.unit}'
+                    )
+            else:
+                messages.error(request, 'Количество должно быть больше нуля')
+        except WorkshopWarehouse.DoesNotExist:
+            messages.error(request, 'Запись склада не найдена')
+        except Exception as e:
+            messages.error(request, f'Ошибка: {str(e)}')
+    
+    return redirect('warehouse')
+
+
+@login_required
+def replenish_product(request, product_id):
+    """Пополнение товара на складе (добавление нового товара)"""
+    if request.method == 'POST':
+        try:
+            product = Product.objects.get(id=product_id)
+            quantity_to_add = int(request.POST.get('quantity_to_add', 0))
+            
+            if quantity_to_add > 0:
+                product.current_stock += quantity_to_add
+                product.save()
+                
+                messages.success(
+                    request,
+                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.current_stock}'
+                )
+            else:
+                messages.error(request, 'Количество должно быть больше нуля')
+        except Product.DoesNotExist:
+            messages.error(request, 'Товар не найден')
+        except Exception as e:
+            messages.error(request, f'Ошибка: {str(e)}')
+    
+    return redirect('warehouse')

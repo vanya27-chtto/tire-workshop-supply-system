@@ -356,7 +356,7 @@
                     <span class="widget-icon">🏭</span>
                     Склад цеха
                 </h3>
-                <button class="btn-add">+ Пополнить запас</button>
+                <button class="btn-add" onclick="openReplenishWarehouseModal()">+ Пополнить запас</button>
             </div>
             <div class="table-container">
                 {% if workshop_warehouses %}
@@ -429,7 +429,7 @@
                     <span class="widget-icon">📦</span>
                     Товары на складе
                 </h3>
-                <button class="btn-add">+ Добавить товар</button>
+                <button class="btn-add" onclick="openReplenishProductModal()">+ Пополнить товар</button>
             </div>
             <div class="table-container">
                 {% if products %}
@@ -492,5 +492,129 @@
             </div>
         </div>
     </main>
+
+    <!-- Модальное окно пополнения товара на складе -->
+    <div class="modal" id="replenishProductModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
+            <div class="modal-header" style="margin-bottom: 20px;">
+                <h3 style="color: #2c3e50; font-size: 18px;">📦 Пополнение товара на складе</h3>
+            </div>
+            <form method="post" action="" id="replenishProductForm">
+                {% csrf_token %}
+                <input type="hidden" id="replenishProductId" name="product_id">
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Товар</label>
+                    <select id="replenishProductSelect" name="product_select" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="">Выберите товар</option>
+                        {% for product in products %}
+                            <option value="{{ product.id }}">{{ product.name }} ({{ product.sku }}) - Текущий остаток: {{ product.current_stock }} {{ product.unit }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Количество для пополнения</label>
+                    <input type="number" id="replenishProductQuantity" name="quantity_to_add" min="1" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+
+                <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeReplenishProductModal()" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">Отмена</button>
+                    <button type="submit" class="btn-add" style="border: none; cursor: pointer;">Пополнить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно пополнения склада цеха -->
+    <div class="modal" id="replenishWarehouseModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
+            <div class="modal-header" style="margin-bottom: 20px;">
+                <h3 style="color: #2c3e50; font-size: 18px;">🏭 Пополнение склада цеха</h3>
+            </div>
+            <form method="post" action="" id="replenishWarehouseForm">
+                {% csrf_token %}
+                <input type="hidden" id="replenishWarehouseId" name="warehouse_id">
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Склад цеха</label>
+                    <select id="replenishWarehouseSelect" name="warehouse_select" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        <option value="">Выберите склад</option>
+                        {% for warehouse in workshop_warehouses %}
+                            <option value="{{ warehouse.id }}">{{ warehouse.product.name }} ({{ warehouse.product.sku }}) - На складе цеха: {{ warehouse.quantity }} {{ warehouse.product.unit }}, На основном складе: {{ warehouse.product.current_stock }} {{ warehouse.product.unit }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Количество для пополнения</label>
+                    <input type="number" id="replenishWarehouseQuantity" name="quantity_to_add" min="1" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                </div>
+
+                <div class="form-actions" style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeReplenishWarehouseModal()" style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer;">Отмена</button>
+                    <button type="submit" class="btn-add" style="border: none; cursor: pointer;">Пополнить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Функции для модального окна пополнения товара
+        function openReplenishProductModal() {
+            document.getElementById('replenishProductModal').style.display = 'flex';
+        }
+
+        function closeReplenishProductModal() {
+            document.getElementById('replenishProductModal').style.display = 'none';
+            document.getElementById('replenishProductForm').reset();
+        }
+
+        // Обработка формы пополнения товара
+        document.getElementById('replenishProductForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const productId = document.getElementById('replenishProductSelect').value;
+            if (!productId) {
+                alert('Выберите товар');
+                return;
+            }
+            this.action = `/warehouse/replenish-product/${productId}/`;
+            this.submit();
+        });
+
+        // Функции для модального окна пополнения склада цеха
+        function openReplenishWarehouseModal() {
+            document.getElementById('replenishWarehouseModal').style.display = 'flex';
+        }
+
+        function closeReplenishWarehouseModal() {
+            document.getElementById('replenishWarehouseModal').style.display = 'none';
+            document.getElementById('replenishWarehouseForm').reset();
+        }
+
+        // Обработка формы пополнения склада цеха
+        document.getElementById('replenishWarehouseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const warehouseId = document.getElementById('replenishWarehouseSelect').value;
+            if (!warehouseId) {
+                alert('Выберите склад');
+                return;
+            }
+            this.action = `/warehouse/replenish-warehouse/${warehouseId}/`;
+            this.submit();
+        });
+
+        // Закрытие модальных окон при клике вне их области
+        window.onclick = function(event) {
+            const productModal = document.getElementById('replenishProductModal');
+            const warehouseModal = document.getElementById('replenishWarehouseModal');
+            if (event.target === productModal) {
+                closeReplenishProductModal();
+            }
+            if (event.target === warehouseModal) {
+                closeReplenishWarehouseModal();
+            }
+        }
+    </script>
 </body>
 </html>
