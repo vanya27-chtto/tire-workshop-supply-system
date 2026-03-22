@@ -57,6 +57,39 @@ def dashboard(request):
 @login_required
 def suppliers(request):
     """Страница поставщиков - управление поставщиками"""
+    
+    if request.method == 'POST':
+        supplier_id = request.POST.get('supplier_id')
+        
+        try:
+            if supplier_id:
+                # Редактирование существующего поставщика
+                supplier = get_object_or_404(Supplier, id=supplier_id)
+                supplier.name = request.POST.get('name', '')
+                supplier.contact_person = request.POST.get('contact_person', '')
+                supplier.phone = request.POST.get('phone', '')
+                supplier.email = request.POST.get('email', '')
+                supplier.address = request.POST.get('address', '')
+                supplier.is_active = request.POST.get('is_active') == 'true'
+                supplier.save()
+                messages.success(request, f'Поставщик "{supplier.name}" успешно обновлён!')
+            else:
+                # Добавление нового поставщика
+                supplier = Supplier.objects.create(
+                    name=request.POST.get('name', ''),
+                    contact_person=request.POST.get('contact_person', ''),
+                    phone=request.POST.get('phone', ''),
+                    email=request.POST.get('email', ''),
+                    address=request.POST.get('address', ''),
+                    is_active=request.POST.get('is_active') == 'true'
+                )
+                messages.success(request, f'Поставщик "{supplier.name}" успешно добавлен!')
+            
+            return redirect('suppliers')
+            
+        except Exception as e:
+            messages.error(request, f'Ошибка: {str(e)}')
+    
     suppliers_list = Supplier.objects.all().order_by('name')
     
     context = {
