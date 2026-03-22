@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
-from core.views import dashboard, warehouse, workshop_stock, update_product_stock, update_workshop_stock, suppliers, requests_view, create_request, orders, create_order, send_order
+from core.views import dashboard, warehouse, workshop_stock, update_product_stock, update_workshop_stock, suppliers, requests_view, create_request, orders, create_order, send_order, replenish_workshop_warehouse, replenish_product
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +26,8 @@ urlpatterns = [
     path('', dashboard, name='dashboard'),
     path('warehouse/', warehouse, name='warehouse'),
     path('warehouse/update/<int:product_id>/', update_product_stock, name='update_product_stock'),
+    path('warehouse/replenish-product/<int:product_id>/', replenish_product, name='replenish_product'),
+    path('warehouse/replenish-warehouse/<int:warehouse_id>/', replenish_workshop_warehouse, name='replenish_workshop_warehouse'),
     path('workshop-stock/', workshop_stock, name='workshop_stock'),
     path('workshop-stock/update/<int:stock_id>/', update_workshop_stock, name='update_workshop_stock'),
     path('suppliers/', suppliers, name='suppliers'),
