@@ -444,6 +444,14 @@
                                     <a href="{% url 'view_request' request_obj.id %}" style="color: #667eea; text-decoration: none; margin-right: 10px;">
                                         👁️ Просмотр
                                     </a>
+                                    {% if request_obj.status != 'ordered' %}
+                                    <form action="{% url 'close_request' request_obj.id %}" method="POST" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" style="background: none; border: none; color: #28a745; cursor: pointer; padding: 0; font-size: 14px;">
+                                            ✅ Закрыть
+                                        </button>
+                                    </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% endfor %}

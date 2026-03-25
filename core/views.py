@@ -526,6 +526,23 @@ def replenish_workshop_warehouse(request, warehouse_id):
 
 
 @login_required
+def close_request(request, request_id):
+    """Закрытие заявки"""
+    request_obj = get_object_or_404(PurchaseRequest, id=request_id)
+    
+    if request.method == 'POST':
+        try:
+            # Обновляем статус заявки на "completed" или другой финальный статус
+            request_obj.status = 'ordered'  # или можно добавить новый статус 'closed'
+            request_obj.save()
+            messages.success(request, f'Заявка {request_obj.request_number} успешно закрыта!')
+        except Exception as e:
+            messages.error(request, f'Ошибка при закрытии заявки: {str(e)}')
+    
+    return redirect('requests')
+
+
+@login_required
 def replenish_product(request, product_id):
     """Пополнение товара на складе (добавление нового товара)"""
     if request.method == 'POST':
