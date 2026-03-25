@@ -1,1 +1,19 @@
-Nothing should be ignored based on the provided file changes. The only modified file is 'templates/procurement/orders.html', which is a source/template file and should not be added to .gitignore.
+```
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Django specific
+*.pyc
+__pycache__/
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*
+```

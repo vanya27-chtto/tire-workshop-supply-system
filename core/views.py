@@ -170,6 +170,21 @@ def requests_view(request):
 
 
 @login_required
+def view_request(request, request_id):
+    """Просмотр деталей заявки"""
+    request_obj = get_object_or_404(PurchaseRequest, id=request_id)
+    items = RequestItem.objects.filter(request=request_obj).select_related('product')
+    
+    context = {
+        'request_obj': request_obj,
+        'items': items,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/view_request.html', context)
+
+
+@login_required
 def create_request(request):
     """Создание новой заявки от сотрудника цеха"""
     if request.method == 'POST':

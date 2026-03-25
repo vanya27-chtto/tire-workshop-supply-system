@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Заявки - Система снабжения</title>
+    <title>Заявка {{ request_obj.request_number }} - Система снабжения</title>
     <style>
         * {
             margin: 0;
@@ -153,6 +153,15 @@
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         }
 
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
         .btn span {
             margin-right: 8px;
         }
@@ -254,28 +263,28 @@
             color: #0c5460;
         }
 
-        /* Пустое состояние */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
+        /* Детали */
+        .detail-row {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e1e5eb;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
             color: #6c757d;
+            width: 200px;
+            flex-shrink: 0;
         }
 
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            margin-bottom: 10px;
-            color: #495057;
-        }
-
-        .empty-state p {
-            font-size: 14px;
-            margin-bottom: 20px;
+        .detail-value {
+            color: #2c3e50;
+            flex: 1;
         }
 
         /* Уведомления */
@@ -306,23 +315,6 @@
             background: #d1ecf1;
             color: #0c5460;
             border: 1px solid #bee5eb;
-        }
-
-        /* Детали заявки */
-        .request-details {
-            font-size: 13px;
-            color: #6c757d;
-            margin-top: 8px;
-        }
-
-        .items-list {
-            margin-top: 10px;
-            padding-left: 20px;
-        }
-
-        .items-list li {
-            margin-bottom: 5px;
-            font-size: 13px;
         }
     </style>
 </head>
@@ -384,9 +376,9 @@
     <!-- Основной контент -->
     <main class="main-content">
         <div class="page-header">
-            <h1 class="page-title">📋 Заявки от сотрудников</h1>
-            <a href="{% url 'create_request' %}" class="btn btn-primary">
-                <span>➕</span> Создать заявку
+            <h1 class="page-title">📋 Заявка {{ request_obj.request_number }}</h1>
+            <a href="{% url 'requests' %}" class="btn btn-secondary">
+                <span>⬅️</span> Назад к списку
             </a>
         </div>
 
@@ -400,51 +392,67 @@
         </div>
         {% endif %}
 
-        <!-- Список заявок -->
+        <!-- Информация о заявке -->
         <div class="card">
             <div class="card-header">
-                Все заявки
+                Информация о заявке
             </div>
             <div class="card-body">
-                {% if requests %}
+                <div class="detail-row">
+                    <div class="detail-label">Номер заявки:</div>
+                    <div class="detail-value"><strong>{{ request_obj.request_number }}</strong></div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Заявитель:</div>
+                    <div class="detail-value">{{ request_obj.requester.username|default:"Не указан" }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Дата создания:</div>
+                    <div class="detail-value">{{ request_obj.created_at|date:"d.m.Y H:i" }}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Статус:</div>
+                    <div class="detail-value">
+                        <span class="status-badge status-pending">
+                            В обработке
+                        </span>
+                    </div>
+                </div>
+                {% if request_obj.items_description %}
+                <div class="detail-row">
+                    <div class="detail-label">Описание:</div>
+                    <div class="detail-value">{{ request_obj.items_description }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Позиции заявки -->
+        <div class="card">
+            <div class="card-header">
+                Позиции заявки
+            </div>
+            <div class="card-body">
+                {% if items %}
                 <div class="table-responsive">
                     <table>
                         <thead>
                             <tr>
-                                <th>Номер заявки</th>
-                                <th>Заявитель</th>
-                                <th>Описание</th>
-                                <th>Дата создания</th>
-                                <th>Статус</th>
-                                <th>Действия</th>
+                                <th>№</th>
+                                <th>Товар</th>
+                                <th>Запрошено количество</th>
+                                <th>Ед. измерения</th>
+                                <th>Примечание</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for request_obj in requests %}
+                            {% for item in items %}
                             <tr>
-                                <td><strong>{{ request_obj.request_number }}</strong></td>
-                                <td>{{ request_obj.requester.username|default:"Не указан" }}</td>
-                                <td>
-                                    {{ request_obj.items_description|truncatechars:50|default:"—" }}
-                                    {% if request_obj.items.all %}
-                                    <ul class="items-list">
-                                        {% for item in request_obj.items.all %}
-                                        <li>• {{ item.product.name }} - {{ item.quantity_requested }} шт.</li>
-                                        {% endfor %}
-                                    </ul>
-                                    {% endif %}
-                                </td>
-                                <td>{{ request_obj.created_at|date:"d.m.Y H:i" }}</td>
-                                <td>
-                                    <span class="status-badge status-pending">
-                                        В обработке
-                                    </span>
-                                </td>
-                                <td>
-                                    <a href="{% url 'view_request' request_obj.id %}" style="color: #667eea; text-decoration: none; margin-right: 10px;">
-                                        👁️ Просмотр
-                                    </a>
-                                </td>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ item.product.name }}</strong></td>
+                                <td>{{ item.quantity_requested }}</td>
+                                <td>{{ item.product.unit }}</td>
+                                <td>{{ item.notes|default:"—" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -452,12 +460,9 @@
                 </div>
                 {% else %}
                 <div class="empty-state">
-                    <div class="empty-state-icon">📋</div>
-                    <h3>Нет заявок</h3>
-                    <p>Заявки еще не созданы. Создайте первую заявку!</p>
-                    <a href="{% url 'create_request' %}" class="btn btn-primary">
-                        <span>➕</span> Создать заявку
-                    </a>
+                    <div class="empty-state-icon">📦</div>
+                    <h3>Нет позиций</h3>
+                    <p>В этой заявке нет товаров</p>
                 </div>
                 {% endif %}
             </div>
