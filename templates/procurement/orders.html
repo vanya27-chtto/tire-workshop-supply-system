@@ -443,7 +443,6 @@
                                 <th>Номер заказа</th>
                                 <th>Поставщик</th>
                                 <th>Статус</th>
-                                <th>Сумма</th>
                                 <th>Дата создания</th>
                                 <th>Дата отправки</th>
                                 <th>Действия</th>
@@ -459,7 +458,6 @@
                                         {{ order.get_status_display }}
                                     </span>
                                 </td>
-                                <td>{{ order.total_amount|floatformat:2 }} руб.</td>
                                 <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
                                 <td>
                                     {% if order.sent_at %}
