@@ -170,6 +170,21 @@ def requests_view(request):
 
 
 @login_required
+def view_request(request, request_id):
+    """Просмотр деталей заявки"""
+    request_obj = get_object_or_404(PurchaseRequest, id=request_id)
+    items = RequestItem.objects.filter(request=request_obj).select_related('product')
+    
+    context = {
+        'request_obj': request_obj,
+        'items': items,
+        'user': request.user,
+    }
+    
+    return render(request, 'procurement/view_request.html', context)
+
+
+@login_required
 def create_request(request):
     """Создание новой заявки от сотрудника цеха"""
     if request.method == 'POST':
@@ -508,6 +523,23 @@ def replenish_workshop_warehouse(request, warehouse_id):
             messages.error(request, f'Ошибка: {str(e)}')
     
     return redirect('warehouse')
+
+
+@login_required
+def close_request(request, request_id):
+    """Закрытие заявки"""
+    request_obj = get_object_or_404(PurchaseRequest, id=request_id)
+    
+    if request.method == 'POST':
+        try:
+            # Обновляем статус заявки на "completed" или другой финальный статус
+            request_obj.status = 'ordered'  # или можно добавить новый статус 'closed'
+            request_obj.save()
+            messages.success(request, f'Заявка {request_obj.request_number} успешно закрыта!')
+        except Exception as e:
+            messages.error(request, f'Ошибка при закрытии заявки: {str(e)}')
+    
+    return redirect('requests')
 
 
 @login_required
