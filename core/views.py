@@ -51,7 +51,7 @@ def dashboard(request):
         'user': request.user,
     }
     
-    return render(request, 'dashboard.html', context)
+    return render(request, 'dashboard/dashboard.html', context)
 
 
 @login_required
