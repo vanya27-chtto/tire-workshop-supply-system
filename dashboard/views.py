@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from django.contrib import messages
 from core.models import Product, PurchaseRequest, PurchaseOrder, Supplier, WorkshopStock, WorkshopWarehouse
 from django.db.models import Sum, F
@@ -118,3 +119,15 @@ def use_material(request):
             messages.error(request, f'Ошибка: {str(e)}')
     
     return redirect('dashboard')
+
+
+def logout_confirm(request):
+    """Страница подтверждения выхода из системы"""
+    if request.method == 'POST':
+        if request.POST.get('action') == 'yes':
+            logout(request)
+            return redirect('login')
+        else:
+            return redirect('dashboard')
+    
+    return render(request, 'registration/logout.html')
