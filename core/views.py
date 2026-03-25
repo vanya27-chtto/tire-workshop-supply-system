@@ -244,13 +244,23 @@ def create_order(request):
         try:
             supplier = get_object_or_404(Supplier, id=supplier_id)
             
+            # Определяем начальный статус заказа
+            # Если выбрана отправка по email и у поставщика есть email - статус 'sent', иначе 'draft'
+            initial_status = PurchaseOrder.Status.SENT if (send_email and supplier.email) else PurchaseOrder.Status.DRAFT
+            
             # Создаем заказ
             order = PurchaseOrder.objects.create(
                 supplier=supplier,
-                status=PurchaseOrder.Status.DRAFT,
+                status=initial_status,
                 notes=notes,
                 created_by=request.user
             )
+            
+            # Если заказ сразу отправлен, устанавливаем дату отправки
+            if initial_status == PurchaseOrder.Status.SENT:
+                from django.utils import timezone
+                order.sent_at = timezone.now()
+                order.save()
             
             # Добавляем позиции заказа
             total = 0
@@ -280,8 +290,11 @@ def create_order(request):
             order.total_amount = total
             order.save()
             
-            # Отправляем email поставщику
-            if send_email and supplier.email:
+            # Отправляем email поставщику (если не был отправлен автоматически при создании)
+            if send_email and supplier.email and initial_status != PurchaseOrder.Status.SENT:
+                send_order_email(order, order_items_data, total)
+                messages.success(request, f'Заказ {order.order_number} создан и отправлен поставщику {supplier.name}!')
+            elif initial_status == PurchaseOrder.Status.SENT:
                 send_order_email(order, order_items_data, total)
                 messages.success(request, f'Заказ {order.order_number} создан и отправлен поставщику {supplier.name}!')
             else:
