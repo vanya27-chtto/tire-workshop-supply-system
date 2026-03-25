@@ -262,7 +262,7 @@ def create_order(request):
             # Создаем заказ
             order = PurchaseOrder.objects.create(
                 supplier=supplier,
-                status=PurchaseOrder.Status.DRAFT,
+                status=PurchaseOrder.Status.SENT if send_email else PurchaseOrder.Status.DRAFT,
                 notes=notes,
                 created_by=request.user
             )
@@ -297,6 +297,9 @@ def create_order(request):
             
             # Отправляем email поставщику
             if send_email and supplier.email:
+                from django.utils import timezone
+                order.sent_at = timezone.now()
+                order.save()
                 send_order_email(order, order_items_data, total)
                 messages.success(request, f'Заказ {order.order_number} создан и отправлен поставщику {supplier.name}!')
             else:
