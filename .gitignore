@@ -1,28 +1,4 @@
 ```
-# Python cache
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-
-# Django specific
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-.env
-.env.local
-.env.
-.envrc
-.coverage
-coverage/
-htmlcov/
-.pytest_cache/
-.mypy_cache/
-.DS_Store
-Thumbs.db
 ```
