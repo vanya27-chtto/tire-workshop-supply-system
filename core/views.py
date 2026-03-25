@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, Product, PurchaseOrder, WorkshopStock, OrderItem, RequestItem
-from core.models import WorkshopWarehouse, Supplier
+from procurement.models import PurchaseRequest, Product, PurchaseOrder, OrderItem, RequestItem
+from core.models import WorkshopWarehouse, Supplier, WorkshopStock
 
 
 @login_required
@@ -220,10 +220,11 @@ def create_request(request):
         except Exception as e:
             messages.error(request, f'Ошибка при создании заявки: {str(e)}')
     
-    products_list = Product.objects.all().order_by('name')
+    # Получаем только материалы со склада цеха (WorkshopStock)
+    workshop_stocks = WorkshopStock.objects.select_related('product').order_by('product__name')
     
     context = {
-        'products': products_list,
+        'workshop_stocks': workshop_stocks,
         'user': request.user,
     }
     
