@@ -1,26 +1,23 @@
 ```
-# Python compiled files
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Django specific
-*.log
-*.pot
-*.po
-*.mo
+# Database
 db.sqlite3
-db.sqlite3-journal
 
-# Environment variables
+# Environment
 .env
 .env.local
 *.env.*
 
-# IDE specific
-.vscode/
-.idea/
+# Logs
+*.log
+
+# Temporary files
+*.tmp
 *.swp
 *.swo
 
@@ -29,17 +26,15 @@ db.sqlite3-journal
 Thumbs.db
 
 # Coverage reports
-.coverage
 coverage/
 htmlcov/
+.coverage
 
-# Distribution / packaging
-dist/
-build/
-*.egg-info/
-MANIFEST
+# Editors
+.vscode/
+.idea/
 
-# Temporary files
-*.tmp
-*~
+# Dependencies
+.venv/
+venv/
 ```
