@@ -205,6 +205,7 @@ class PurchaseRequest(models.Model):
         verbose_name="Кто согласовал"
     )
     approved_at = models.DateTimeField(null=True, blank=True, verbose_name="Дата согласования")
+    items_description = models.TextField(blank=True, verbose_name="Описание товаров", help_text="Описание товаров, необходимых для заявки")
 
     class Meta:
         verbose_name = "Заявка на закупку"
