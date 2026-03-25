@@ -409,18 +409,18 @@
 
             <div class="card">
                 <div class="card-header">
-                    Позиции товаров
+                    Материалы со склада
                 </div>
                 <div class="card-body">
                     <div class="items-container" id="itemsContainer">
                         <div class="item-row">
                             <div class="form-group">
-                                <label>Товар *</label>
+                                <label>Материал со склада *</label>
                                 <select name="products[]" class="form-control" required>
-                                    <option value="">Выберите товар</option>
-                                    {% for product in products %}
-                                    <option value="{{ product.id }}">
-                                        {{ product.name }} (остаток: {{ product.current_stock }} {{ product.unit }})
+                                    <option value="">Выберите материал</option>
+                                    {% for stock in workshop_stocks %}
+                                    <option value="{{ stock.product.id }}">
+                                        {{ stock.product.name }} (доступно: {{ stock.quantity }} {{ stock.product.unit }})
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -471,6 +471,15 @@
     </main>
 
     <script>
+        // Сохраняем опции материалов для динамического добавления
+        const workshopStockOptions = `
+            {% for stock in workshop_stocks %}
+            <option value="{{ stock.product.id }}">
+                {{ stock.product.name }} (доступно: {{ stock.quantity }} {{ stock.product.unit }})
+            </option>
+            {% endfor %}
+        `.trim();
+
         document.addEventListener('DOMContentLoaded', function() {
             const itemsContainer = document.getElementById('itemsContainer');
             const addItemBtn = document.getElementById('addItemBtn');
@@ -482,14 +491,10 @@
                 newRow.className = 'item-row';
                 newRow.innerHTML = `
                     <div class="form-group">
-                        <label>Товар *</label>
+                        <label>Материал со склада *</label>
                         <select name="products[]" class="form-control" required>
-                            <option value="">Выберите товар</option>
-                            {% for product in products %}
-                            <option value="{{ product.id }}">
-                                {{ product.name }} (остаток: {{ product.current_stock }} {{ product.unit }})
-                            </option>
-                            {% endfor %}
+                            <option value="">Выберите материал</option>
+                            ${workshopStockOptions}
                         </select>
                     </div>
                     <div class="form-group">
