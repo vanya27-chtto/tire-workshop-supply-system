@@ -7,6 +7,12 @@ from django.db.models import Sum, F
 from datetime import datetime
 
 
+def logout_user(request):
+    """Выход из аккаунта и перенаправление на страницу авторизации"""
+    logout(request)
+    return redirect('login')
+
+
 @login_required
 def dashboard(request):
     """Главная страница/dashboard с виджетами в зависимости от роли пользователя"""

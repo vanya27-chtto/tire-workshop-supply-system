@@ -1,26 +1,25 @@
 ```
-# Python compiled files
+# Python cache
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Dependencies
-venv/
-.venv/
-.env
-.env.local
-.env.*
+# Compiled Python files
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
 
-# Logs
+# Django specific
+*.db
 *.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
-# Coverage reports
-.coverage
-htmlcov/
-coverage/
-
-# IDE specific
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
@@ -30,4 +29,26 @@ coverage/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Environment variables
+.env
+.env.local
+*.env.*
+
+# Coverage reports
+.coverage
+coverage/
+htmlcov/
+
+# Distribution / packaging
+dist/
+build/
+*.egg
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+.pytest_cache/
+.mypy_cache/
 ```
