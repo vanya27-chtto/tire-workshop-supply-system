@@ -22,7 +22,7 @@ from core.views import dashboard, warehouse, workshop_stock, update_product_stoc
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
-    path('accounts/logout/', auth_views.LogoutView.as_view(next_page='/accounts/login/'), name='logout'),
+    path('accounts/logout/', auth_views.LogoutView.as_view(template_name='registration/login.html'), name='logout'),
     path('', dashboard, name='dashboard'),
     path('warehouse/', warehouse, name='warehouse'),
     path('warehouse/update/<int:product_id>/', update_product_stock, name='update_product_stock'),
