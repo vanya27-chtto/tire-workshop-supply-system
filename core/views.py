@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product
-from core.models import WorkshopWarehouse, Supplier, WorkshopStock
+from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem
+from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product
 
 
 @login_required
@@ -31,12 +31,12 @@ def dashboard(request):
         })
     
     # Уведомления о низком запасе на складе
-    low_stock_products = Product.objects.filter(current_stock__lte=F('min_stock_level'))
+    low_stock_products = Product.objects.filter(quantity__lte=F('min_quantity'))
     for product in low_stock_products:
         notifications.append({
             'type': 'low_stock',
             'title': f'Низкий запас: {product.name}',
-            'description': f'Осталось: {product.current_stock} {product.unit} (минимум: {product.min_stock_level})',
+            'description': f'Осталось: {product.quantity} {product.unit} (минимум: {product.min_quantity})',
             'date': product.updated_at,
             'icon': '⚠️',
             'priority': 'high'
@@ -126,9 +126,9 @@ def update_product_stock(request, product_id):
             quantity = int(request.POST.get('quantity', 0))
             min_quantity = int(request.POST.get('min_quantity', 0))
             
-            # Обновляем значения
-            product.current_stock = quantity
-            product.min_stock_level = min_quantity
+            # Обновляем значения (используем правильные имена полей из core.models.Product)
+            product.quantity = quantity
+            product.min_quantity = min_quantity
             product.save()
             
             messages.success(
@@ -463,25 +463,40 @@ def update_workshop_stock(request, stock_id):
     """Обновление запасов цеха товароведом"""
     if request.method == 'POST':
         try:
-            workshop_stock = WorkshopStock.objects.get(id=stock_id)
-            quantity = int(request.POST.get('quantity', 0))
-            min_quantity = int(request.POST.get('min_quantity', 0))
+            workshop_stock_item = WorkshopStock.objects.get(id=stock_id)
+            quantity_str = request.POST.get('quantity', '0')
+            min_quantity_str = request.POST.get('min_quantity', '0')
             location = request.POST.get('location', '')
             
+            # Проверка на пустые значения
+            if not quantity_str or quantity_str.strip() == '':
+                messages.error(request, 'Количество должно быть указано')
+                return redirect('workshop_stock')
+            if not min_quantity_str or min_quantity_str.strip() == '':
+                messages.error(request, 'Минимальное количество должно быть указано')
+                return redirect('workshop_stock')
+                
+            quantity = int(quantity_str)
+            min_quantity = int(min_quantity_str)
+            
             # Обновляем значения
-            workshop_stock.quantity = quantity
-            workshop_stock.min_quantity = min_quantity
-            workshop_stock.location = location
-            workshop_stock.responsible_person = request.user
+            workshop_stock_item.quantity = quantity
+            workshop_stock_item.min_quantity = min_quantity
+            workshop_stock_item.location = location
+            # Не пытаемся установить updated_by, так как это property без setter
+            # responsible_person обновляется отдельно если нужно
+            workshop_stock_item.responsible_person = request.user
             # Статус обновится автоматически в методе save() модели
-            workshop_stock.save()
+            workshop_stock_item.save()
             
             messages.success(
                 request, 
-                f'Запасы "{workshop_stock.product.name}" в цеху обновлены: количество={quantity}, мин. запас={min_quantity}'
+                f'Запасы "{workshop_stock_item.product.name}" в цеху обновлены: количество={quantity}, мин. запас={min_quantity}'
             )
         except WorkshopStock.DoesNotExist:
             messages.error(request, 'Запись о запасах не найдена')
+        except ValueError:
+            messages.error(request, 'Некорректное значение количества')
         except Exception as e:
             messages.error(request, f'Ошибка: {str(e)}')
     
@@ -507,9 +522,9 @@ def replenish_workshop_warehouse(request, warehouse_id):
             if quantity_to_add > 0:
                 # Проверяем, достаточно ли товара на основном складе
                 product = warehouse.product
-                if product.current_stock >= quantity_to_add:
+                if product.quantity >= quantity_to_add:
                     # Списываем с основного склада
-                    product.current_stock -= quantity_to_add
+                    product.quantity -= quantity_to_add
                     product.save()
                     
                     # Добавляем в склад цеха
@@ -524,7 +539,7 @@ def replenish_workshop_warehouse(request, warehouse_id):
                 else:
                     messages.error(
                         request,
-                        f'Недостаточно товара на складе. Доступно: {product.current_stock} {product.unit}'
+                        f'Недостаточно товара на складе. Доступно: {product.quantity} {product.unit}'
                     )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
@@ -571,12 +586,12 @@ def replenish_product(request, product_id):
             quantity_to_add = int(quantity_to_add_str)
             
             if quantity_to_add > 0:
-                product.current_stock += quantity_to_add
+                product.quantity += quantity_to_add
                 product.save()
                 
                 messages.success(
                     request,
-                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.current_stock}'
+                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.quantity}'
                 )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
