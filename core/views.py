@@ -31,12 +31,12 @@ def dashboard(request):
         })
     
     # Уведомления о низком запасе на складе
-    low_stock_products = Product.objects.filter(quantity__lte=F('min_quantity'))
+    low_stock_products = Product.objects.filter(current_stock__lte=F('min_stock_level'))
     for product in low_stock_products:
         notifications.append({
             'type': 'low_stock',
             'title': f'Низкий запас: {product.name}',
-            'description': f'Осталось: {product.quantity} {product.unit} (минимум: {product.min_quantity})',
+            'description': f'Осталось: {product.current_stock} {product.unit} (минимум: {product.min_stock_level})',
             'date': product.updated_at,
             'icon': '⚠️',
             'priority': 'high'
