@@ -468,9 +468,12 @@
                                 </td>
                                 <td>
                                     {% if order.status == 'draft' and order.supplier.email %}
-                                        <a href="{% url 'send_order' order.id %}" class="btn btn-success btn-sm">
-                                            📧 Отправить
-                                        </a>
+                                        <form method="post" action="{% url 'send_order' order.id %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                📧 Отправить
+                                            </button>
+                                        </form>
                                     {% endif %}
                                     {% if order.status != 'draft' %}
                                         <span style="color: #27ae60; font-size: 12px;">✓ Отправлен</span>
