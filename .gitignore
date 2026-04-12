@@ -1,34 +1,50 @@
+```
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.Python
+*.so
+.coverage
+htmlcov/
+.coverage.*
+.python-version
 
 # Database
 db.sqlite3
+*.db
+*.db-journal
 
 # Dependencies
 .venv/
 venv/
-env/
-pip-log.txt
-pip-selfcheck.json
+.env
+.env.local
+.env.*
 
-# Security
-*.env
-*.env.local
-*.env.dev
-*.env.prod
-*.env.backup
-*.key
-*.pem
+# Build and distribution artifacts
+build/
+dist/
+*.egg
+*.egg-info/
+*.dist-info/
+
+# Logs
+*.log
 
 # OS generated files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
-Icon?
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Testing
+.pytest_cache/
+.mypy_cache/
+```

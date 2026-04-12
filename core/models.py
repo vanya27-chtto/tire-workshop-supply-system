@@ -37,17 +37,17 @@ class Supplier(models.Model):
 
 
 class Product(models.Model):
-    """Товар на складе (для продажи)"""
+    """Материал для цеха"""
     category = models.ForeignKey(
         Category, 
         on_delete=models.CASCADE, 
         related_name='products',
         verbose_name=_('Категория')
     )
-    name = models.CharField(_('Название товара'), max_length=200)
+    name = models.CharField(_('Название материала'), max_length=200)
     sku = models.CharField(_('Артикул'), max_length=50, unique=True, blank=True)
     unit = models.CharField(_('Единица измерения'), max_length=20, default='шт.')
-    quantity = models.PositiveIntegerField(_('Количество на складе'), default=0)
+    quantity = models.PositiveIntegerField(_('Количество на складе цеха'), default=0)
     min_quantity = models.PositiveIntegerField(
         _('Минимальный уровень запаса'), 
         default=10,
@@ -64,7 +64,6 @@ class Product(models.Model):
     )
     created_at = models.DateTimeField(_('Дата добавления'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Дата обновления'), auto_now=True)
-    is_sales_item = models.BooleanField(_('Товар для продажи'), default=True, help_text=_('Если отмечено, товар предназначен для продажи клиентам'))
 
     class Meta:
         verbose_name = _('Товар')

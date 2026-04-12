@@ -102,17 +102,14 @@ def suppliers(request):
 
 @login_required
 def warehouse(request):
-    """Страница склада - управление товарными запасами"""
-    # Товары для продажи (шины, диски, тормоза и т.д.)
-    products = CoreProduct.objects.filter(is_sales_item=True).select_related('category')
-    # Материалы цеха (грузики, вентили и т.д.)
-    workshop_materials = CoreProduct.objects.filter(is_sales_item=False).select_related('category')
+    """Страница склада - управление материалами цеха"""
+    # Все материалы (шины, грузики, вентили и т.д.)
+    products = CoreProduct.objects.all().select_related('category')
     workshop_stocks = WorkshopStock.objects.all().select_related('product', 'responsible_person')
     workshop_warehouses = WorkshopWarehouse.objects.all().select_related('product', 'responsible_person')
     
     context = {
         'products': products,
-        'workshop_materials': workshop_materials,
         'workshop_stocks': workshop_stocks,
         'workshop_warehouses': workshop_warehouses,
         'user': request.user,

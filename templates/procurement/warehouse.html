@@ -356,45 +356,52 @@
                     <span class="widget-icon">🔧</span>
                     Материалы цеха
                 </h3>
+                <button class="btn-add" onclick="openReplenishProductModal()">+ Пополнить материал</button>
             </div>
             <div class="table-container">
-                {% if workshop_materials %}
+                {% if products %}
                     <table class="products-table">
                         <thead>
                             <tr>
-                                <th>Материал</th>
+                                <th>Наименование</th>
                                 <th>Артикул</th>
                                 <th>Категория</th>
                                 <th>Ед. изм.</th>
-                                <th>Количество</th>
-                                <th>Мин. запас</th>
+                                <th>Текущий остаток</th>
+                                <th>Мин. остаток</th>
                                 <th>Статус</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for material in workshop_materials %}
+                            {% for product in products %}
                                 <tr>
                                     <td>
-                                        <span class="product-name">{{ material.name }}</span>
+                                        <span class="product-name">{{ product.name }}</span>
                                     </td>
-                                    <td>{{ material.sku }}</td>
+                                    <td>{{ product.sku }}</td>
                                     <td>
-                                        {% if material.category %}
-                                            <span class="category-badge">{{ material.category.name }}</span>
+                                        {% if product.category %}
+                                            <span class="category-badge">{{ product.category.name }}</span>
                                         {% else %}
                                             <span style="color: #95a5a6;">—</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ material.unit }}</td>
+                                    <td>{{ product.unit }}</td>
                                     <td>
-                                        <span class="quantity-badge {% if material.needs_reorder %}stock-low{% else %}stock-good{% endif %}">
-                                            {{ material.quantity }}
-                                        </span>
-                                    </td>
-                                    <td>{{ material.min_quantity }}</td>
-                                    <td>
-                                        {% if material.needs_reorder %}
-                                            <span class="stock-badge stock-low">Низкий</span>
+                                        <form method="post" action="{% url 'update_product_stock' product.id %}" style="display:inline;">
+                                            {% csrf_token %}
+                                            <input type="number" name="quantity" value="{{ product.quantity }}" 
+                                                   min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="min_quantity" value="{{ product.min_quantity }}" 
+                                                   min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
+                                        </td>
+                                        <td>
+                                            <button type="submit" class="btn-add" style="padding:4px 10px; font-size:12px;">Сохранить</button>
+                                        </form>
+                                        {% if product.quantity <= product.min_quantity %}
+                                            <span class="stock-badge stock-low">Низкий запас</span>
                                         {% else %}
                                             <span class="stock-badge stock-good">В норме</span>
                                         {% endif %}
@@ -412,7 +419,7 @@
             </div>
         </div>
 
-        <!-- Таблица склад цеха -->
+        <!-- Таблица Склад цеха -->
         <div class="products-card" style="margin-top: 30px;">
             <div class="card-header">
                 <h3>
@@ -481,75 +488,6 @@
                     <div class="empty-state">
                         <div class="empty-state-icon">🏭</div>
                         <p>Запасы материалов в цеху отсутствуют</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="products-card" style="margin-top: 30px;">
-            <div class="card-header">
-                <h3>
-                    <span class="widget-icon">📦</span>
-                    Товары на складе
-                </h3>
-                <button class="btn-add" onclick="openReplenishProductModal()">+ Пополнить товар</button>
-            </div>
-            <div class="table-container">
-                {% if products %}
-                    <table class="products-table">
-                        <thead>
-                            <tr>
-                                <th>Наименование</th>
-                                <th>Артикул</th>
-                                <th>Категория</th>
-                                <th>Ед. изм.</th>
-                                <th>Текущий остаток</th>
-                                <th>Мин. остаток</th>
-                                <th>Статус</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for product in products %}
-                                <tr>
-                                    <td>
-                                        <span class="product-name">{{ product.name }}</span>
-                                    </td>
-                                    <td>{{ product.sku }}</td>
-                                    <td>
-                                        {% if product.category %}
-                                            <span class="category-badge">{{ product.category.name }}</span>
-                                        {% else %}
-                                            <span style="color: #95a5a6;">—</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ product.unit }}</td>
-                                    <td>
-                                        <form method="post" action="{% url 'update_product_stock' product.id %}" style="display:inline;">
-                                            {% csrf_token %}
-                                            <input type="number" name="quantity" value="{{ product.quantity }}" 
-                                                   min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
-                                        </td>
-                                        <td>
-                                            <input type="number" name="min_quantity" value="{{ product.min_quantity }}" 
-                                                   min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
-                                        </td>
-                                        <td>
-                                            <button type="submit" class="btn-add" style="padding:4px 10px; font-size:12px;">Сохранить</button>
-                                        </form>
-                                        {% if product.quantity <= product.min_quantity %}
-                                            <span class="stock-badge stock-low">Низкий запас</span>
-                                        {% else %}
-                                            <span class="stock-badge stock-good">В норме</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                {% else %}
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📦</div>
-                        <p>Товары на складе отсутствуют</p>
                     </div>
                 {% endif %}
             </div>
