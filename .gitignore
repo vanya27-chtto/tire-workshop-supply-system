@@ -1,1 +1,33 @@
-Nothing needs to be added to .gitignore since only a Python source file (`procurement/models.py`) was modified and no build artifacts, dependencies, or temporary files were detected in the changes.
+```
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Database
+db.sqlite3
+*.db
+
+# Environment
+.env
+.env.local
+.env.*
+```

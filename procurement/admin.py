@@ -4,14 +4,15 @@ from .models import WorkshopStock, Category, Supplier, Product, PurchaseRequest,
 
 @admin.register(WorkshopStock)
 class WorkshopStockAdmin(admin.ModelAdmin):
-    list_display = ('product', 'quantity', 'min_quantity', 'status', 'location', 'updated_at', 'updated_by')
+    list_display = ('product', 'quantity', 'min_quantity', 'status', 'location', 'updated_at', 'responsible_person')
     list_filter = ('status', 'location')
     search_fields = ('product__name', 'product__sku')
-    readonly_fields = ('updated_at', 'updated_by', 'status')
+    readonly_fields = ('updated_at', 'status')
     
     def save_model(self, request, obj, form, change):
         # Автоматически устанавливаем пользователя, который обновил запись
-        obj.updated_by = request.user
+        if change and request.user.is_authenticated:
+            obj.responsible_person = request.user
         super().save_model(request, obj, form, change)
 
 
