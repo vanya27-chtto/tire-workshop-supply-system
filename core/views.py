@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem
-from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product
+from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct
+from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product as CoreProduct
 
 
 @login_required
@@ -31,7 +31,7 @@ def dashboard(request):
         })
     
     # Уведомления о низком запасе на складе
-    low_stock_products = Product.objects.filter(quantity__lte=F('min_quantity'))
+    low_stock_products = CoreProduct.objects.filter(quantity__lte=F('min_quantity'))
     for product in low_stock_products:
         notifications.append({
             'type': 'low_stock',
@@ -103,7 +103,7 @@ def suppliers(request):
 @login_required
 def warehouse(request):
     """Страница склада - управление товарными запасами"""
-    products = Product.objects.all().select_related('category')
+    products = CoreProduct.objects.all().select_related('category')
     workshop_stocks = WorkshopStock.objects.all().select_related('product', 'responsible_person')
     workshop_warehouses = WorkshopWarehouse.objects.all().select_related('product', 'responsible_person')
     
@@ -122,7 +122,7 @@ def update_product_stock(request, product_id):
     """Обновление остатков товара товароведом"""
     if request.method == 'POST':
         try:
-            product = Product.objects.get(id=product_id)
+            product = CoreProduct.objects.get(id=product_id)
             quantity = int(request.POST.get('quantity', 0))
             min_quantity = int(request.POST.get('min_quantity', 0))
             
@@ -135,7 +135,7 @@ def update_product_stock(request, product_id):
                 request, 
                 f'Запасы товара "{product.name}" обновлены: текущий={quantity}, минимальный={min_quantity}'
             )
-        except Product.DoesNotExist:
+        except CoreProduct.DoesNotExist:
             messages.error(request, 'Товар не найден')
         except Exception as e:
             messages.error(request, f'Ошибка: {str(e)}')
@@ -203,13 +203,27 @@ def create_request(request):
             # Добавляем позиции заявки
             for i, product_id in enumerate(product_ids):
                 if product_id and quantities[i]:
-                    product = get_object_or_404(Product, id=product_id)
+                    # Получаем CoreProduct из WorkshopWarehouse
+                    warehouse_item = get_object_or_404(WorkshopWarehouse, id=product_id)
+                    product = warehouse_item.product  # Это CoreProduct
+                    
+                    # Создаем или получаем соответствующий ProcurementProduct
+                    proc_product, created = ProcurementProduct.objects.get_or_create(
+                        name=product.name,
+                        defaults={
+                            'sku': product.sku,
+                            'unit': product.unit,
+                            'category': product.category,
+                            'price': product.price,
+                        }
+                    )
+                    
                     quantity = int(quantities[i])
                     notes = notes_list[i] if i < len(notes_list) else ''
                     
                     RequestItem.objects.create(
                         request=purchase_request,
-                        product=product,
+                        product=proc_product,
                         quantity=quantity,
                         requested_quantity=quantity
                     )
@@ -273,7 +287,7 @@ def create_order(request):
             order_items_data = []
             for i, product_id in enumerate(product_ids):
                 if product_id and quantities[i]:
-                    product = get_object_or_404(Product, id=product_id)
+                    product = get_object_or_404(ProcurementProduct, id=product_id)
                     quantity = int(quantities[i])
                     price = float(prices[i]) if prices[i] else product.price
                     
@@ -312,7 +326,7 @@ def create_order(request):
             messages.error(request, f'Ошибка при создании заказа: {str(e)}')
     
     suppliers_list = Supplier.objects.filter(is_active=True).order_by('name')
-    products_list = Product.objects.all().order_by('name')
+    products_list = ProcurementProduct.objects.all().order_by('name')
     
     context = {
         'suppliers': suppliers_list,
@@ -575,7 +589,7 @@ def replenish_product(request, product_id):
     """Пополнение товара на складе (добавление нового товара)"""
     if request.method == 'POST':
         try:
-            product = Product.objects.get(id=product_id)
+            product = CoreProduct.objects.get(id=product_id)
             quantity_to_add_str = request.POST.get('quantity_to_add', '0')
             
             # Проверка на пустое значение
@@ -595,7 +609,7 @@ def replenish_product(request, product_id):
                 )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
-        except Product.DoesNotExist:
+        except CoreProduct.DoesNotExist:
             messages.error(request, 'Товар не найден')
         except ValueError:
             messages.error(request, 'Некорректное значение количества')
