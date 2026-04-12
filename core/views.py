@@ -127,8 +127,8 @@ def update_product_stock(request, product_id):
             min_quantity = int(request.POST.get('min_quantity', 0))
             
             # Обновляем значения
-            product.quantity = quantity
-            product.min_quantity = min_quantity
+            product.current_stock = quantity
+            product.min_stock_level = min_quantity
             product.save()
             
             messages.success(
@@ -507,9 +507,9 @@ def replenish_workshop_warehouse(request, warehouse_id):
             if quantity_to_add > 0:
                 # Проверяем, достаточно ли товара на основном складе
                 product = warehouse.product
-                if product.quantity >= quantity_to_add:
+                if product.current_stock >= quantity_to_add:
                     # Списываем с основного склада
-                    product.quantity -= quantity_to_add
+                    product.current_stock -= quantity_to_add
                     product.save()
                     
                     # Добавляем в склад цеха
@@ -524,7 +524,7 @@ def replenish_workshop_warehouse(request, warehouse_id):
                 else:
                     messages.error(
                         request,
-                        f'Недостаточно товара на складе. Доступно: {product.quantity} {product.unit}'
+                        f'Недостаточно товара на складе. Доступно: {product.current_stock} {product.unit}'
                     )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
@@ -571,12 +571,12 @@ def replenish_product(request, product_id):
             quantity_to_add = int(quantity_to_add_str)
             
             if quantity_to_add > 0:
-                product.quantity += quantity_to_add
+                product.current_stock += quantity_to_add
                 product.save()
                 
                 messages.success(
                     request,
-                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.quantity}'
+                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.current_stock}'
                 )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
