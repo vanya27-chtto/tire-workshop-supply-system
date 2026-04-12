@@ -1,12 +1,36 @@
 ```
-# Python cache
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Django specific
-*.mo
-*.pot
+# Database
+db.sqlite3
+
+# Dependencies
+.venv/
+venv/
+env/
+pip-log.txt
+pip-selfcheck.json
+
+# Security
+*.env
+*.env.local
+*.env.dev
+*.env.prod
+*.env.backup
+*.key
+*.pem
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Icon?
 ```

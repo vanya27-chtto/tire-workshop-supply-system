@@ -349,8 +349,71 @@
             <p>Управление товарными запасами на складе</p>
         </div>
 
-        <!-- Таблица склад цеха -->
+        <!-- Таблица Материалы цеха -->
         <div class="products-card">
+            <div class="card-header">
+                <h3>
+                    <span class="widget-icon">🔧</span>
+                    Материалы цеха
+                </h3>
+            </div>
+            <div class="table-container">
+                {% if workshop_materials %}
+                    <table class="products-table">
+                        <thead>
+                            <tr>
+                                <th>Материал</th>
+                                <th>Артикул</th>
+                                <th>Категория</th>
+                                <th>Ед. изм.</th>
+                                <th>Количество</th>
+                                <th>Мин. запас</th>
+                                <th>Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for material in workshop_materials %}
+                                <tr>
+                                    <td>
+                                        <span class="product-name">{{ material.name }}</span>
+                                    </td>
+                                    <td>{{ material.sku }}</td>
+                                    <td>
+                                        {% if material.category %}
+                                            <span class="category-badge">{{ material.category.name }}</span>
+                                        {% else %}
+                                            <span style="color: #95a5a6;">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ material.unit }}</td>
+                                    <td>
+                                        <span class="quantity-badge {% if material.needs_reorder %}stock-low{% else %}stock-good{% endif %}">
+                                            {{ material.quantity }}
+                                        </span>
+                                    </td>
+                                    <td>{{ material.min_quantity }}</td>
+                                    <td>
+                                        {% if material.needs_reorder %}
+                                            <span class="stock-badge stock-low">Низкий</span>
+                                        {% else %}
+                                            <span class="stock-badge stock-good">В норме</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔧</div>
+                        <p>Материалы цеха отсутствуют</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Таблица склад цеха -->
+        <div class="products-card" style="margin-top: 30px;">
             <div class="card-header">
                 <h3>
                     <span class="widget-icon">🏭</span>

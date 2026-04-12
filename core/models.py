@@ -37,7 +37,7 @@ class Supplier(models.Model):
 
 
 class Product(models.Model):
-    """Товар на складе"""
+    """Товар на складе (для продажи)"""
     category = models.ForeignKey(
         Category, 
         on_delete=models.CASCADE, 
@@ -64,6 +64,7 @@ class Product(models.Model):
     )
     created_at = models.DateTimeField(_('Дата добавления'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Дата обновления'), auto_now=True)
+    is_sales_item = models.BooleanField(_('Товар для продажи'), default=True, help_text=_('Если отмечено, товар предназначен для продажи клиентам'))
 
     class Meta:
         verbose_name = _('Товар')
