@@ -5,7 +5,7 @@ from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
 from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem
-from core.models import WorkshopWarehouse, Supplier, WorkshopStock, PurchaseRequestItem, Product
+from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product
 
 
 @login_required
@@ -123,17 +123,17 @@ def update_product_stock(request, product_id):
     if request.method == 'POST':
         try:
             product = Product.objects.get(id=product_id)
-            current_stock = int(request.POST.get('current_stock', 0))
-            min_stock_level = int(request.POST.get('min_stock_level', 0))
+            quantity = int(request.POST.get('quantity', 0))
+            min_quantity = int(request.POST.get('min_quantity', 0))
             
             # Обновляем значения
-            product.current_stock = current_stock
-            product.min_stock_level = min_stock_level
+            product.quantity = quantity
+            product.min_quantity = min_quantity
             product.save()
             
             messages.success(
                 request, 
-                f'Запасы товара "{product.name}" обновлены: текущий={current_stock}, минимальный={min_stock_level}'
+                f'Запасы товара "{product.name}" обновлены: текущий={quantity}, минимальный={min_quantity}'
             )
         except Product.DoesNotExist:
             messages.error(request, 'Товар не найден')
@@ -207,11 +207,11 @@ def create_request(request):
                     quantity = int(quantities[i])
                     notes = notes_list[i] if i < len(notes_list) else ''
                     
-                    PurchaseRequestItem.objects.create(
+                    RequestItem.objects.create(
                         request=purchase_request,
                         product=product,
-                        quantity_requested=quantity,
-                        notes=notes
+                        quantity=quantity,
+                        requested_quantity=quantity
                     )
             
             messages.success(request, f'Заявка {purchase_request.request_number} создана!')
@@ -472,7 +472,7 @@ def update_workshop_stock(request, stock_id):
             workshop_stock.quantity = quantity
             workshop_stock.min_quantity = min_quantity
             workshop_stock.location = location
-            workshop_stock.updated_by = request.user
+            workshop_stock.responsible_person = request.user
             # Статус обновится автоматически в методе save() модели
             workshop_stock.save()
             
@@ -495,14 +495,21 @@ def replenish_workshop_warehouse(request, warehouse_id):
         try:
             from core.models import WorkshopWarehouse
             warehouse = WorkshopWarehouse.objects.get(id=warehouse_id)
-            quantity_to_add = int(request.POST.get('quantity_to_add', 0))
+            quantity_to_add_str = request.POST.get('quantity_to_add', '0')
+            
+            # Проверка на пустое значение
+            if not quantity_to_add_str or quantity_to_add_str.strip() == '':
+                messages.error(request, 'Количество должно быть указано')
+                return redirect('warehouse')
+                
+            quantity_to_add = int(quantity_to_add_str)
             
             if quantity_to_add > 0:
                 # Проверяем, достаточно ли товара на основном складе
                 product = warehouse.product
-                if product.current_stock >= quantity_to_add:
+                if product.quantity >= quantity_to_add:
                     # Списываем с основного склада
-                    product.current_stock -= quantity_to_add
+                    product.quantity -= quantity_to_add
                     product.save()
                     
                     # Добавляем в склад цеха
@@ -517,12 +524,14 @@ def replenish_workshop_warehouse(request, warehouse_id):
                 else:
                     messages.error(
                         request,
-                        f'Недостаточно товара на складе. Доступно: {product.current_stock} {product.unit}'
+                        f'Недостаточно товара на складе. Доступно: {product.quantity} {product.unit}'
                     )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
         except WorkshopWarehouse.DoesNotExist:
             messages.error(request, 'Запись склада не найдена')
+        except ValueError:
+            messages.error(request, 'Некорректное значение количества')
         except Exception as e:
             messages.error(request, f'Ошибка: {str(e)}')
     
@@ -552,20 +561,29 @@ def replenish_product(request, product_id):
     if request.method == 'POST':
         try:
             product = Product.objects.get(id=product_id)
-            quantity_to_add = int(request.POST.get('quantity_to_add', 0))
+            quantity_to_add_str = request.POST.get('quantity_to_add', '0')
+            
+            # Проверка на пустое значение
+            if not quantity_to_add_str or quantity_to_add_str.strip() == '':
+                messages.error(request, 'Количество должно быть указано')
+                return redirect('warehouse')
+                
+            quantity_to_add = int(quantity_to_add_str)
             
             if quantity_to_add > 0:
-                product.current_stock += quantity_to_add
+                product.quantity += quantity_to_add
                 product.save()
                 
                 messages.success(
                     request,
-                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.current_stock}'
+                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.quantity}'
                 )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
         except Product.DoesNotExist:
             messages.error(request, 'Товар не найден')
+        except ValueError:
+            messages.error(request, 'Некорректное значение количества')
         except Exception as e:
             messages.error(request, f'Ошибка: {str(e)}')
     

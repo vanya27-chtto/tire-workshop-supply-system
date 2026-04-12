@@ -463,17 +463,17 @@
                                     <td>
                                         <form method="post" action="{% url 'update_product_stock' product.id %}" style="display:inline;">
                                             {% csrf_token %}
-                                            <input type="number" name="current_stock" value="{{ product.current_stock }}" 
+                                            <input type="number" name="quantity" value="{{ product.quantity }}" 
                                                    min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                         </td>
                                         <td>
-                                            <input type="number" name="min_stock_level" value="{{ product.min_stock_level }}" 
+                                            <input type="number" name="min_quantity" value="{{ product.min_quantity }}" 
                                                    min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                         </td>
                                         <td>
                                             <button type="submit" class="btn-add" style="padding:4px 10px; font-size:12px;">Сохранить</button>
                                         </form>
-                                        {% if product.current_stock <= product.min_stock_level %}
+                                        {% if product.quantity <= product.min_quantity %}
                                             <span class="stock-badge stock-low">Низкий запас</span>
                                         {% else %}
                                             <span class="stock-badge stock-good">В норме</span>
@@ -508,7 +508,7 @@
                     <select id="replenishProductSelect" name="product_select" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         <option value="">Выберите товар</option>
                         {% for product in products %}
-                            <option value="{{ product.id }}">{{ product.name }} ({{ product.sku }}) - Текущий остаток: {{ product.current_stock }} {{ product.unit }}</option>
+                            <option value="{{ product.id }}">{{ product.name }} ({{ product.sku }}) - Текущий остаток: {{ product.quantity }} {{ product.unit }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -541,7 +541,7 @@
                     <select id="replenishWarehouseSelect" name="warehouse_select" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
                         <option value="">Выберите склад</option>
                         {% for warehouse in workshop_warehouses %}
-                            <option value="{{ warehouse.id }}">{{ warehouse.product.name }} ({{ warehouse.product.sku }}) - На складе цеха: {{ warehouse.quantity }} {{ warehouse.product.unit }}, На основном складе: {{ warehouse.product.current_stock }} {{ warehouse.product.unit }}</option>
+                            <option value="{{ warehouse.id }}">{{ warehouse.product.name }} ({{ warehouse.product.sku }}) - На складе цеха: {{ warehouse.quantity }} {{ warehouse.product.unit }}, На основном складе: {{ warehouse.product.quantity }} {{ warehouse.product.unit }}</option>
                         {% endfor %}
                     </select>
                 </div>
