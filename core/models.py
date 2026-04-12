@@ -37,14 +37,14 @@ class Supplier(models.Model):
 
 
 class Product(models.Model):
-    """Товар на складе"""
+    """Материал на складе"""
     category = models.ForeignKey(
         Category, 
         on_delete=models.CASCADE, 
         related_name='products',
         verbose_name=_('Категория')
     )
-    name = models.CharField(_('Название товара'), max_length=200)
+    name = models.CharField(_('Название материала'), max_length=200)
     sku = models.CharField(_('Артикул'), max_length=50, unique=True, blank=True)
     unit = models.CharField(_('Единица измерения'), max_length=20, default='шт.')
     quantity = models.PositiveIntegerField(_('Количество на складе'), default=0)
@@ -66,8 +66,8 @@ class Product(models.Model):
     updated_at = models.DateTimeField(_('Дата обновления'), auto_now=True)
 
     class Meta:
-        verbose_name = _('Товар')
-        verbose_name_plural = _('Товары')
+        verbose_name = _('Материал')
+        verbose_name_plural = _('Материалы')
         ordering = ['name']
 
     def __str__(self):
@@ -127,7 +127,7 @@ class PurchaseRequestItem(models.Model):
         Product,
         on_delete=models.CASCADE,
         related_name='request_items',
-        verbose_name=_('Товар')
+        verbose_name=_('Материал')
     )
     quantity_requested = models.PositiveIntegerField(_('Запрашиваемое количество'))
     quantity_approved = models.PositiveIntegerField(_('Одобренное количество'), null=True, blank=True)

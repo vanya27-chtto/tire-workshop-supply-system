@@ -346,7 +346,7 @@
                 {% endif %}
             </div>
             <h1>Склад</h1>
-            <p>Управление товарными запасами на складе</p>
+            <p>Управление материальными запасами на складе</p>
         </div>
 
         <!-- Таблица склад цеха -->
@@ -427,16 +427,16 @@
             <div class="card-header">
                 <h3>
                     <span class="widget-icon">📦</span>
-                    Товары на складе
+                    Материалы на складе
                 </h3>
-                <button class="btn-add" onclick="openReplenishProductModal()">+ Пополнить товар</button>
+                <button class="btn-add" onclick="openReplenishProductModal()">+ Пополнить материал</button>
             </div>
             <div class="table-container">
                 {% if products %}
                     <table class="products-table">
                         <thead>
                             <tr>
-                                <th>Наименование</th>
+                                <th>Наименование материала</th>
                                 <th>Артикул</th>
                                 <th>Категория</th>
                                 <th>Ед. изм.</th>
@@ -486,27 +486,27 @@
                 {% else %}
                     <div class="empty-state">
                         <div class="empty-state-icon">📦</div>
-                        <p>Товары на складе отсутствуют</p>
+                        <p>Материалы на складе отсутствуют</p>
                     </div>
                 {% endif %}
             </div>
         </div>
     </main>
 
-    <!-- Модальное окно пополнения товара на складе -->
+    <!-- Модальное окно пополнения материала на складе -->
     <div class="modal" id="replenishProductModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
         <div class="modal-content" style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%;">
             <div class="modal-header" style="margin-bottom: 20px;">
-                <h3 style="color: #2c3e50; font-size: 18px;">📦 Пополнение товара на складе</h3>
+                <h3 style="color: #2c3e50; font-size: 18px;">📦 Пополнение материала на складе</h3>
             </div>
             <form method="post" action="" id="replenishProductForm">
                 {% csrf_token %}
                 <input type="hidden" id="replenishProductId" name="product_id">
                 
                 <div class="form-group" style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Товар</label>
+                    <label style="display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600;">Материал</label>
                     <select id="replenishProductSelect" name="product_select" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
-                        <option value="">Выберите товар</option>
+                        <option value="">Выберите материал</option>
                         {% for product in products %}
                             <option value="{{ product.id }}">{{ product.name }} ({{ product.sku }}) - Текущий остаток: {{ product.quantity }} {{ product.unit }}</option>
                         {% endfor %}
