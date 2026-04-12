@@ -34,14 +34,15 @@ class WorkshopStock(models.Model):
         blank=True,
         verbose_name="Место хранения"
     )
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
-    updated_by = models.ForeignKey(
+    responsible_person = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='workshop_stock_updates',
-        verbose_name="Кто обновил"
+        blank=True,
+        related_name='workshop_stocks_managed',
+        verbose_name="Ответственный"
     )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
 
     class Meta:
         verbose_name = "Запас в цеху"
@@ -214,6 +215,18 @@ class PurchaseRequest(models.Model):
 
     def __str__(self):
         return f"Заявка {self.request_number} - {self.get_status_display()}"
+
+    def save(self, *args, **kwargs):
+        """Автогенерация номера заявки при создании"""
+        if not self.request_number and not self.pk:
+            from datetime import datetime
+            date_str = datetime.now().strftime('%Y%m%d')
+            last_request = PurchaseRequest.objects.filter(
+                created_at__date=datetime.now().date()
+            ).order_by('-pk').first()
+            seq = (last_request.pk % 1000 + 1) if last_request else 1
+            self.request_number = f"PR-{date_str}-{seq:04d}"
+        super().save(*args, **kwargs)
 
 
 class RequestItem(models.Model):
