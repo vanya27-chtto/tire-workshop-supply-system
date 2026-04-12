@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct
+from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct, Category
 from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product as CoreProduct
 
 
@@ -102,15 +102,11 @@ def suppliers(request):
 
 @login_required
 def warehouse(request):
-    """Страница склада - управление товарными запасами"""
+    """Страница склада - управление материальными запасами"""
     products = CoreProduct.objects.all().select_related('category')
-    workshop_stocks = WorkshopStock.objects.all().select_related('product', 'responsible_person')
-    workshop_warehouses = WorkshopWarehouse.objects.all().select_related('product', 'responsible_person')
     
     context = {
         'products': products,
-        'workshop_stocks': workshop_stocks,
-        'workshop_warehouses': workshop_warehouses,
         'user': request.user,
     }
     
@@ -207,16 +203,31 @@ def create_request(request):
                     warehouse_item = get_object_or_404(WorkshopWarehouse, id=product_id)
                     product = warehouse_item.product  # Это CoreProduct
                     
+                    # Автоматически получаем или создаем категорию если её нет
+                    category = None
+                    if product.category:
+                        category = product.category
+                    else:
+                        # Если у материала нет категории, создаем или получаем категорию по умолчанию
+                        category, _ = Category.objects.get_or_create(
+                            name='Расходные материалы',
+                            defaults={'description': 'Категория по умолчанию для материалов без категории'}
+                        )
+                    
                     # Создаем или получаем соответствующий ProcurementProduct
                     proc_product, created = ProcurementProduct.objects.get_or_create(
                         name=product.name,
                         defaults={
                             'sku': product.sku,
                             'unit': product.unit,
-                            'category': product.category,
+                            'category': category,
                             'price': product.price,
                         }
                     )
+                    # Если категория изменилась, обновляем её
+                    if not created and proc_product.category != category:
+                        proc_product.category = category
+                        proc_product.save()
                     
                     quantity = int(quantities[i])
                     notes = notes_list[i] if i < len(notes_list) else ''
@@ -262,7 +273,7 @@ def orders(request):
 
 @login_required
 def create_order(request):
-    """Создание нового заказа поставщику"""
+    """Создание нового заказа поставщику - заказ материалов для склада"""
     if request.method == 'POST':
         supplier_id = request.POST.get('supplier')
         product_ids = request.POST.getlist('products[]')
@@ -287,13 +298,25 @@ def create_order(request):
             order_items_data = []
             for i, product_id in enumerate(product_ids):
                 if product_id and quantities[i]:
-                    product = get_object_or_404(ProcurementProduct, id=product_id)
+                    # Получаем материал из core.models.Product (материалы на складе)
+                    product = get_object_or_404(CoreProduct, id=product_id)
                     quantity = int(quantities[i])
-                    price = float(prices[i]) if prices[i] else product.price
+                    price = float(prices[i]) if prices[i] else float(product.price)
+                    
+                    # Создаем или получаем соответствующий ProcurementProduct для заказа
+                    proc_product, created = ProcurementProduct.objects.get_or_create(
+                        name=product.name,
+                        defaults={
+                            'sku': product.sku,
+                            'unit': product.unit,
+                            'category': product.category,
+                            'price': price,
+                        }
+                    )
                     
                     order_item = OrderItem.objects.create(
                         order=order,
-                        product=product,
+                        product=proc_product,
                         quantity_ordered=quantity,
                         unit_price=price,
                         subtotal=quantity * price
@@ -326,7 +349,8 @@ def create_order(request):
             messages.error(request, f'Ошибка при создании заказа: {str(e)}')
     
     suppliers_list = Supplier.objects.filter(is_active=True).order_by('name')
-    products_list = ProcurementProduct.objects.all().order_by('name')
+    # Получаем материалы со склада (core.models.Product), а не товары для продажи
+    products_list = CoreProduct.objects.all().order_by('name')
     
     context = {
         'suppliers': suppliers_list,
