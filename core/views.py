@@ -133,10 +133,10 @@ def update_product_stock(request, product_id):
             
             messages.success(
                 request, 
-                f'Запасы товара "{product.name}" обновлены: текущий={quantity}, минимальный={min_quantity}'
+                f'Запасы материала "{product.name}" обновлены: текущий={quantity}, минимальный={min_quantity}'
             )
         except CoreProduct.DoesNotExist:
-            messages.error(request, 'Товар не найден')
+            messages.error(request, 'Материал не найден')
         except Exception as e:
             messages.error(request, f'Ошибка: {str(e)}')
     
@@ -399,7 +399,7 @@ def send_order_email(order, items, total):
             <thead>
                 <tr>
                     <th>№</th>
-                    <th>Товар</th>
+                    <th>Материал</th>
                     <th>Количество</th>
                     <th>Цена за ед.</th>
                     <th>Сумма</th>
@@ -586,7 +586,7 @@ def close_request(request, request_id):
 
 @login_required
 def replenish_product(request, product_id):
-    """Пополнение товара на складе (добавление нового товара)"""
+    """Пополнение материала на складе (добавление нового материала)"""
     if request.method == 'POST':
         try:
             product = CoreProduct.objects.get(id=product_id)
@@ -605,12 +605,12 @@ def replenish_product(request, product_id):
                 
                 messages.success(
                     request,
-                    f'Товар "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.quantity}'
+                    f'Материал "{product.name}" пополнен на {quantity_to_add} {product.unit}. Текущий остаток: {product.quantity}'
                 )
             else:
                 messages.error(request, 'Количество должно быть больше нуля')
         except CoreProduct.DoesNotExist:
-            messages.error(request, 'Товар не найден')
+            messages.error(request, 'Материал не найден')
         except ValueError:
             messages.error(request, 'Некорректное значение количества')
         except Exception as e:

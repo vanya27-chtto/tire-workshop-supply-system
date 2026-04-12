@@ -453,13 +453,13 @@
             <!-- Позиции заказа -->
             <div class="card">
                 <div class="card-header">
-                    Товары в заказе
+                    Материалы в заказе
                 </div>
                 <div class="card-body">
                     <table class="items-table" id="itemsTable">
                         <thead>
                             <tr>
-                                <th style="width: 40%;">Товар</th>
+                                <th style="width: 40%;">Материал</th>
                                 <th style="width: 20%;">Количество</th>
                                 <th style="width: 20%;">Цена за ед. (руб.)</th>
                                 <th style="width: 15%;">Сумма</th>
@@ -470,7 +470,7 @@
                             <tr class="item-row">
                                 <td>
                                     <select name="products[]" class="form-control product-select" required onchange="updatePrice(this)">
-                                        <option value="">Выберите товар</option>
+                                        <option value="">Выберите материал</option>
                                         {% for product in products %}
                                             <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} (остаток: {{ product.quantity }} {{ product.unit }})</option>
                                         {% endfor %}
