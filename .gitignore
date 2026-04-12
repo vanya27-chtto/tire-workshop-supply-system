@@ -1,12 +1,4 @@
 ```
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Django specific
-*.mo
-*.pot
-.DS_Store
+# Database
+db.sqlite3
 ```
