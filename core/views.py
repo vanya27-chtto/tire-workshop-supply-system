@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct, Category
-from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product as CoreProduct
+from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct, Category as ProcurementCategory
+from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product as CoreProduct, Category as CoreCategory
 
 
 @login_required
@@ -206,10 +206,15 @@ def create_request(request):
                     # Автоматически получаем или создаем категорию если её нет
                     category = None
                     if product.category:
-                        category = product.category
+                        # product.category - это CoreCategory, нужно получить или создать ProcurementCategory
+                        proc_category, _ = ProcurementCategory.objects.get_or_create(
+                            name=product.category.name,
+                            defaults={'description': product.category.description}
+                        )
+                        category = proc_category
                     else:
                         # Если у материала нет категории, создаем или получаем категорию по умолчанию
-                        category, _ = Category.objects.get_or_create(
+                        category, _ = ProcurementCategory.objects.get_or_create(
                             name='Расходные материалы',
                             defaults={'description': 'Категория по умолчанию для материалов без категории'}
                         )
