@@ -1,18 +1,45 @@
 ```gitignore
-# Python cache
+# Python cache files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Compiled Python files
-*.cpython-*.pyc
+# Django specific
+*.mo
+*.pot
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Dependencies
+.venv/
+venv/
+env/
+ENV/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Logs
 *.log
 
-# Environment files
-.env
-.env.local
-*.env.*
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
 ```
