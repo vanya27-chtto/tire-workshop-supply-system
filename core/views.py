@@ -288,7 +288,7 @@ def create_order(request):
         send_email = request.POST.get('send_email') == 'on'
         
         try:
-            supplier = get_object_or_404(ProcurementSupplier, id=supplier_id)
+            supplier = get_object_or_404(Supplier, id=supplier_id)
             
             # Создаем заказ
             order = PurchaseOrder.objects.create(
@@ -353,7 +353,7 @@ def create_order(request):
         except Exception as e:
             messages.error(request, f'Ошибка при создании заказа: {str(e)}')
     
-    suppliers_list = ProcurementSupplier.objects.filter(is_active=True).order_by('name')
+    suppliers_list = Supplier.objects.filter(is_active=True).order_by('name')
     # Получаем материалы со склада (core.models.Product), а не товары для продажи
     products_list = CoreProduct.objects.all().order_by('name')
     

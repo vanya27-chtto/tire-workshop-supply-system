@@ -2,6 +2,25 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+class Supplier(models.Model):
+    """Поставщик товаров"""
+    name = models.CharField(max_length=200, verbose_name="Название поставщика")
+    email = models.EmailField(verbose_name="Email")
+    phone = models.CharField(max_length=20, blank=True, verbose_name="Телефон")
+    address = models.TextField(blank=True, verbose_name="Адрес")
+    contact_person = models.CharField(max_length=100, blank=True, verbose_name="Контактное лицо")
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
+
+    class Meta:
+        verbose_name = "Поставщик"
+        verbose_name_plural = "Поставщики"
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
 class WorkshopStock(models.Model):
     """Запасы материалов в цеху"""
     STATUS_CHOICES = [
@@ -75,25 +94,6 @@ class Category(models.Model):
     class Meta:
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
-
-
-class Supplier(models.Model):
-    """Поставщик товаров"""
-    name = models.CharField(max_length=200, verbose_name="Название поставщика")
-    email = models.EmailField(verbose_name="Email")
-    phone = models.CharField(max_length=20, blank=True, verbose_name="Телефон")
-    address = models.TextField(blank=True, verbose_name="Адрес")
-    contact_person = models.CharField(max_length=100, blank=True, verbose_name="Контактное лицо")
-    is_active = models.BooleanField(default=True, verbose_name="Активен")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата добавления")
-
-    class Meta:
-        verbose_name = "Поставщик"
-        verbose_name_plural = "Поставщики"
         ordering = ['name']
 
     def __str__(self):
