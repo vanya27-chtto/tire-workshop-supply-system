@@ -582,9 +582,9 @@
             <div class="modal-header">
                 <h3>✏️ Использование материала</h3>
             </div>
-            <form id="useMaterialForm" method="post">
+            <form id="useMaterialForm" method="post" action="{% url 'use_material' %}">
                 {% csrf_token %}
-                <input type="hidden" id="materialId" name="material_id">
+                <input type="hidden" id="materialId" name="stock_id">
                 
                 <div class="form-group">
                     <label>Материал</label>
@@ -639,19 +639,8 @@
             }
         });
 
-        // Обработка формы
-        document.getElementById('useMaterialForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const materialId = document.getElementById('materialId').value;
-            const quantity = document.getElementById('useQuantity').value;
-            const notes = document.getElementById('useNotes').value;
-
-            // Здесь будет логика отправки данных на сервер
-            alert(`Материал ID: ${materialId}\nИспользовано: ${quantity}\nПримечание: ${notes}`);
-            
-            closeUseModal();
-        });
+        // Обработка формы - теперь форма отправляется стандартным способом
+        // Убрали e.preventDefault(), чтобы форма отправлялась на сервер
     </script>
 </body>
 </html>
