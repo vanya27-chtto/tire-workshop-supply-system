@@ -643,14 +643,26 @@
         document.getElementById('useMaterialForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const materialId = document.getElementById('materialId').value;
-            const quantity = document.getElementById('useQuantity').value;
-            const notes = document.getElementById('useNotes').value;
-
-            // Здесь будет логика отправки данных на сервер
-            alert(`Материал ID: ${materialId}\nИспользовано: ${quantity}\nПримечание: ${notes}`);
+            const formData = new FormData(this);
             
-            closeUseModal();
+            fetch('/dashboard/use-material/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => {
+                if (response.ok || response.redirected) {
+                    window.location.reload();
+                } else {
+                    alert('Ошибка при использовании материала');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Произошла ошибка при отправке данных');
+            });
         });
     </script>
 </body>
