@@ -1,30 +1,13 @@
 ```
-# Python
+# Python cache
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+*.pyc
+*.pyo
+*.pyd
 
-# Database
-db.sqlite3
-*.sqlite3
-
-# Migrations
-*/migrations/*.pyc
+# Compiled Python files in specific directories
+core/__pycache__/
+dashboard/__pycache__/
+procurement/__pycache__/
+tire_workshop_supply_system/__pycache__/
 ```
