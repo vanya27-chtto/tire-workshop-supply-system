@@ -235,6 +235,7 @@ class RequestItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="Товар")
     quantity = models.PositiveIntegerField(verbose_name="Количество")
     requested_quantity = models.PositiveIntegerField(verbose_name="Запрошенное количество")
+    notes = models.TextField(blank=True, verbose_name="Примечание")
 
     class Meta:
         verbose_name = "Позиция заявки"

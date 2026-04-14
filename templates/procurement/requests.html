@@ -426,10 +426,10 @@
                                 <td>{{ request_obj.requester.username|default:"Не указан" }}</td>
                                 <td>
                                     {{ request_obj.items_description|truncatechars:50|default:"—" }}
-                                    {% if request_obj.items.all %}
+                                    {% if request_obj.request_items.all %}
                                     <ul class="items-list">
-                                        {% for item in request_obj.items.all %}
-                                        <li>• {{ item.product.name }} - {{ item.quantity_requested }} шт.</li>
+                                        {% for item in request_obj.request_items.all %}
+                                        <li>• {{ item.product.name }} - {{ item.requested_quantity }} шт.</li>
                                         {% endfor %}
                                     </ul>
                                     {% endif %}
