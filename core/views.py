@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
-from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct, Category as ProcurementCategory
+from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct, Category as ProcurementCategory, Supplier as ProcurementSupplier
 from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product as CoreProduct, Category as CoreCategory
 
 
@@ -288,13 +288,13 @@ def create_order(request):
         send_email = request.POST.get('send_email') == 'on'
         
         try:
-            supplier = get_object_or_404(Supplier, id=supplier_id)
+            supplier = get_object_or_404(ProcurementSupplier, id=supplier_id)
             
             # Создаем заказ
             order = PurchaseOrder.objects.create(
                 supplier=supplier,
                 status=PurchaseOrder.Status.SENT if send_email else PurchaseOrder.Status.DRAFT,
-                notes=notes,
+                comment=notes,
                 created_by=request.user
             )
             
@@ -322,7 +322,7 @@ def create_order(request):
                     order_item = OrderItem.objects.create(
                         order=order,
                         product=proc_product,
-                        quantity_ordered=quantity,
+                        quantity=quantity,
                         unit_price=price,
                         subtotal=quantity * price
                     )
@@ -353,7 +353,7 @@ def create_order(request):
         except Exception as e:
             messages.error(request, f'Ошибка при создании заказа: {str(e)}')
     
-    suppliers_list = Supplier.objects.filter(is_active=True).order_by('name')
+    suppliers_list = ProcurementSupplier.objects.filter(is_active=True).order_by('name')
     # Получаем материалы со склада (core.models.Product), а не товары для продажи
     products_list = CoreProduct.objects.all().order_by('name')
     
@@ -377,10 +377,10 @@ def send_order(request, order_id):
     
     # Получаем позиции заказа
     order_items_data = []
-    for item in order.items.all():
+    for item in order.order_items.all():
         order_items_data.append({
             'product': item.product.name,
-            'quantity': item.quantity_ordered,
+            'quantity': item.quantity,
             'unit_price': float(item.unit_price),
             'subtotal': float(item.subtotal)
         })
