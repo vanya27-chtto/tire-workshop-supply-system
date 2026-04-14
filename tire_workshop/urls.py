@@ -18,12 +18,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from core.views import dashboard, warehouse, workshop_stock, update_product_stock, update_workshop_stock, suppliers, requests_view, view_request, create_request, close_request, orders, create_order, send_order, replenish_workshop_warehouse, replenish_product
+from dashboard.views import use_material
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', auth_views.LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('accounts/logout/', auth_views.LogoutView.as_view(template_name='registration/login.html'), name='logout'),
     path('', dashboard, name='dashboard'),
+    path('use-material/', use_material, name='use_material'),
     path('warehouse/', warehouse, name='warehouse'),
     path('warehouse/update/<int:product_id>/', update_product_stock, name='update_product_stock'),
     path('warehouse/replenish-product/<int:product_id>/', replenish_product, name='replenish_product'),
