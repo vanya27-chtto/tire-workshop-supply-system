@@ -247,14 +247,16 @@ class RequestItem(models.Model):
 
 class PurchaseOrder(models.Model):
     """Заказ поставщику"""
-    STATUS_CHOICES = [
-        ('draft', 'Черновик'),
-        ('sent', 'Отправлен'),
-        ('confirmed', 'Подтвержден'),
-        ('partial', 'Частично исполнен'),
-        ('completed', 'Исполнен'),
-        ('cancelled', 'Отменен'),
-    ]
+    
+    class Status(models.TextChoices):
+        DRAFT = 'draft', 'Черновик'
+        SENT = 'sent', 'Отправлен'
+        CONFIRMED = 'confirmed', 'Подтвержден'
+        PARTIAL = 'partial', 'Частично исполнен'
+        COMPLETED = 'completed', 'Исполнен'
+        CANCELLED = 'cancelled', 'Отменен'
+
+    STATUS_CHOICES = Status.choices
 
     order_number = models.CharField(max_length=20, unique=True, verbose_name="Номер заказа")
     supplier = models.ForeignKey(
@@ -266,7 +268,7 @@ class PurchaseOrder(models.Model):
     status = models.CharField(
         max_length=20, 
         choices=STATUS_CHOICES,
-        default='draft',
+        default=Status.SENT,
         verbose_name="Статус"
     )
     request = models.ForeignKey(
