@@ -1,45 +1,69 @@
-```gitignore
-# Python cache files
+```
+# Database
+db.sqlite3
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Django specific
-*.mo
-*.pot
+.Python
+env/
+venv/
+.venv/
+.ENV
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
 *.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
+*.pot
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+
+# Compiled and build artifacts
+*.o
+*.obj
+*.out
+*.exe
+*.dll
+*.so
+*.a
 
 # Dependencies
-.venv/
-venv/
-env/
-ENV/
+node_modules/
+target/
+.gradle/
+julia-*/
+zig*/
 
-# IDE and editor files
-.vscode/
-.idea/
+# Logs and temp files
+*.tmp
 *.swp
 *.swo
-*~
 
-# OS generated files
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# System files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Logs
-*.log
-
-# Coverage reports
+# Coverage
 coverage/
 htmlcov/
-.coverage
 ```

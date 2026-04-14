@@ -5,7 +5,10 @@ from django.db.models import F
 from django.core.mail import send_mail
 from django.conf import settings
 from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, RequestItem, Product as ProcurementProduct, Category as ProcurementCategory, Supplier as ProcurementSupplier
-from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product as CoreProduct, Category as CoreCategory
+from core.models import WorkshopWarehouse, Supplier as CoreSupplier, WorkshopStock, Product as CoreProduct, Category as CoreCategory
+
+# Используем модель поставщика из procurement для заказов (PurchaseOrder использует procurement.Supplier)
+Supplier = ProcurementSupplier
 
 
 @login_required
@@ -56,7 +59,7 @@ def dashboard(request):
 
 @login_required
 def suppliers(request):
-    """Страница поставщиков - управление поставщиками"""
+    """Страница поставщиков - управление поставщиками (core.models.Supplier)"""
     
     if request.method == 'POST':
         supplier_id = request.POST.get('supplier_id')
@@ -64,7 +67,7 @@ def suppliers(request):
         try:
             if supplier_id:
                 # Редактирование существующего поставщика
-                supplier = get_object_or_404(Supplier, id=supplier_id)
+                supplier = get_object_or_404(CoreSupplier, id=supplier_id)
                 supplier.name = request.POST.get('name', '')
                 supplier.contact_person = request.POST.get('contact_person', '')
                 supplier.phone = request.POST.get('phone', '')
@@ -75,7 +78,7 @@ def suppliers(request):
                 messages.success(request, f'Поставщик "{supplier.name}" успешно обновлён!')
             else:
                 # Добавление нового поставщика
-                supplier = Supplier.objects.create(
+                supplier = CoreSupplier.objects.create(
                     name=request.POST.get('name', ''),
                     contact_person=request.POST.get('contact_person', ''),
                     phone=request.POST.get('phone', ''),
@@ -90,7 +93,7 @@ def suppliers(request):
         except Exception as e:
             messages.error(request, f'Ошибка: {str(e)}')
     
-    suppliers_list = Supplier.objects.all().order_by('name')
+    suppliers_list = CoreSupplier.objects.all().order_by('name')
     
     context = {
         'suppliers': suppliers_list,
