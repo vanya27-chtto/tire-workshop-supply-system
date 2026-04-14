@@ -8,6 +8,10 @@ from procurement.models import PurchaseRequest, PurchaseOrder, OrderItem, Reques
 from core.models import WorkshopWarehouse, Supplier, WorkshopStock, Product as CoreProduct, Category as CoreCategory
 
 
+# Константа для статуса заказа "Отправлен"
+ORDER_STATUS_SENT = 'sent'
+
+
 @login_required
 def dashboard(request):
     """Главная страница после авторизации"""
@@ -293,7 +297,7 @@ def create_order(request):
             # Создаем заказ
             order = PurchaseOrder.objects.create(
                 supplier=supplier,
-                status=PurchaseOrder.Status.SENT if send_email else PurchaseOrder.Status.DRAFT,
+                status=ORDER_STATUS_SENT,  # Автоматически ставим статус "Отправлен"
                 notes=notes,
                 created_by=request.user
             )

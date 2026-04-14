@@ -1,13 +1,36 @@
 ```
-# Python cache
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Compiled Python files in specific directories
-core/__pycache__/
-dashboard/__pycache__/
-procurement/__pycache__/
-tire_workshop_supply_system/__pycache__/
+# Django
+*.log
+*.pot
+*.po
+MANIFEST.in
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Logs
+*.log
+
+# Coverage
+.coverage
+coverage/
+htmlcov/
+
+# Temporary files
+*.tmp
+*.temp
 ```
