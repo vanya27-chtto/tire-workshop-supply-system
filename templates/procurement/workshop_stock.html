@@ -362,6 +362,7 @@
                                         <span class="product-name">{{ stock.product.name }}</span>
                                     </td>
                                     <td>{{ stock.product.sku }}</td>
+                                    <td>{{ stock.quantity }} {{ stock.product.unit }}</td>
                                     <td>
                                         <form method="post" action="{% url 'update_workshop_stock' stock.id %}" style="display:inline;">
                                             {% csrf_token %}
@@ -369,11 +370,12 @@
                                                    min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                     </td>
                                     <td>
-                                        <input type="number" name="min_quantity" value="{{ stock.min_quantity }}" 
-                                               min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
+                                            <input type="number" name="min_quantity" value="{{ stock.min_quantity }}" 
+                                                   min="0" style="width:70px; padding:4px; border:1px solid #ddd; border-radius:4px;">
                                     </td>
                                     <td>
-                                        <button type="submit" class="btn-add" style="padding:4px 10px; font-size:12px;">Сохранить</button>
+                                            <button type="submit" class="btn-add" style="padding:4px 10px; font-size:12px;">Сохранить</button>
+                                        </form>
                                         {% if stock.is_low_stock %}
                                             <span style="color: #e74c3c; font-size: 12px; margin-left: 8px;">⚠️ Низкий</span>
                                         {% else %}
