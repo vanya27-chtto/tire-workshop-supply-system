@@ -75,6 +75,26 @@ def suppliers(request):
                 supplier.address = request.POST.get('address', '')
                 supplier.is_active = request.POST.get('is_active') == 'true'
                 supplier.save()
+                
+                # Синхронизация с procurement.models.Supplier
+                proc_supplier, created = ProcurementSupplier.objects.get_or_create(
+                    name=supplier.name,
+                    defaults={
+                        'email': supplier.email,
+                        'phone': supplier.phone,
+                        'address': supplier.address,
+                        'contact_person': supplier.contact_person,
+                        'is_active': supplier.is_active
+                    }
+                )
+                if not created:
+                    proc_supplier.email = supplier.email
+                    proc_supplier.phone = supplier.phone
+                    proc_supplier.address = supplier.address
+                    proc_supplier.contact_person = supplier.contact_person
+                    proc_supplier.is_active = supplier.is_active
+                    proc_supplier.save()
+                
                 messages.success(request, f'Поставщик "{supplier.name}" успешно обновлён!')
             else:
                 # Добавление нового поставщика
@@ -86,6 +106,17 @@ def suppliers(request):
                     address=request.POST.get('address', ''),
                     is_active=request.POST.get('is_active') == 'true'
                 )
+                
+                # Синхронизация с procurement.models.Supplier
+                ProcurementSupplier.objects.create(
+                    name=supplier.name,
+                    email=supplier.email,
+                    phone=supplier.phone,
+                    address=supplier.address,
+                    contact_person=supplier.contact_person,
+                    is_active=supplier.is_active
+                )
+                
                 messages.success(request, f'Поставщик "{supplier.name}" успешно добавлен!')
             
             return redirect('suppliers')

@@ -258,7 +258,7 @@ class PurchaseOrder(models.Model):
 
     STATUS_CHOICES = Status.choices
 
-    order_number = models.CharField(max_length=20, unique=True, verbose_name="Номер заказа")
+    order_number = models.CharField(max_length=20, unique=True, verbose_name="Номер заказа", editable=False)
     supplier = models.ForeignKey(
         Supplier, 
         on_delete=models.PROTECT,
@@ -304,6 +304,18 @@ class PurchaseOrder(models.Model):
 
     def __str__(self):
         return f"Заказ {self.order_number} - {self.supplier.name}"
+
+    def save(self, *args, **kwargs):
+        """Автогенерация номера заказа при создании"""
+        if not self.order_number and not self.pk:
+            from datetime import datetime
+            date_str = datetime.now().strftime('%Y%m%d')
+            last_order = PurchaseOrder.objects.filter(
+                created_at__date=datetime.now().date()
+            ).order_by('-pk').first()
+            seq = (last_order.pk % 1000 + 1) if last_order else 1
+            self.order_number = f"PO-{date_str}-{seq:04d}"
+        super().save(*args, **kwargs)
 
 
 class OrderItem(models.Model):
